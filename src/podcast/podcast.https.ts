@@ -1,5 +1,5 @@
 import { apiHTTPSpotify, apiHttpTaddy, apiTokenSpotify } from "../app/connect/axios"
-
+import openai from '../app/connect/openai';
 interface podcastOptions {
     spotifyToken: string,
     id_spotify: any
@@ -11,7 +11,6 @@ export const searchSpotifyPodcast = async (
   options: podcastOptions
   ) => {
       const {spotifyToken,id_spotify} = options
-      console.log(spotifyToken)
       try {
       const {data} = await apiHTTPSpotify(spotifyToken).get(`/v1/shows/${id_spotify}`)
      
@@ -51,6 +50,7 @@ export const searchTaddyPodcast = async (
       `
         try {
         const {data} = await apiHttpTaddy.post('/',{query})
+
         return data.data.searchForTerm.podcastSeries
   
         } catch (error) {
@@ -90,4 +90,51 @@ export const searchTaddyPodcastbyId = async (
       } catch (error) {
           throw new Error('从taddy接口根据id搜索播客失败');
       }
+}
+
+/***
+ * 通过openai剔除description中的引流链接
+ */
+export const rejectDescLink = async (
+  description: string
+) => {
+    try {
+      const data = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+            {"role": "user", "content": 
+              `Please help me remove the links and scripts related to traffic flow in the following text. 
+              There should be no website links or email addresses.:${description}`},
+            ],
+            // temperature: 0.5
+
+        });
+        return data.choices[0].message.content
+
+    } catch (error) {
+      throw new Error('从openai剔除description中的引流链接失败');
+    }
+}
+
+/***
+ * 通过openai将description翻译为中文
+ */
+export const transDesc = async (
+  dataReject: string
+) => {
+  
+  try {
+      const data = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {"role": "system", "content": "Please play the role of an expert in the field of translation, translating English into Chinese."},
+          {"role": "user", "content": `Please translate the following text into Chinese:${dataReject}`},
+            ],
+            temperature: 0 
+
+        });
+        return data.choices[0].message.content
+  } catch (error) {
+    throw new Error('通过openai将description翻译为中文失败');
+  }
 }

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as podcastService from './podcast.service';
+import openai from '../app/connect/openai';
 
 /***
  * 整理searchNewPodcast中获得的数据 
@@ -13,7 +14,6 @@ export const arrangeSearchNewPodcastInfo = (
   );
   
   const arrangedData = matchedtaddyData.map((item:any,index:number) => {
-
     return {
       podcast_name: spotifyData.name,
       id_spotify: spotifyData.id,
@@ -24,9 +24,10 @@ export const arrangeSearchNewPodcastInfo = (
       total_episodes_spotify: spotifyData.total_episodes,
       total_episodes_taddy: item.totalEpisodesCount,
       lastest_updatetime_spotify: spotifyData.episodes.items[0].release_date,
-      lastest_updatetime_taddy: formatData(item.episodes[0].datePublished),
+      lastest_updatetime_taddy: formatData(item.episodes[0] ? item.episodes[0].datePublished : 0),
       description: spotifyData.description,
-    }
+      trans_description: ''
+    } 
   })
   return arrangedData
 }
@@ -53,20 +54,45 @@ const formatData = (timestamp: any) => {
   return formattedDate
 }
 
+
+// 包装函数，用于生成 VerifyPodcastExists 中间件
+export const verifyPodcastExists = (shouldExist:boolean) => {
+  return (
+    request: Request,
+    response: Response,
+    next: NextFunction,
+  ) => {
+    VerifyPodcastExistsWrapper(request, response, next, shouldExist);
+  };
+};
 /***
  * 验证podcast是否已经存在
  */
-export const VerifyPodcastExists = async (
+const VerifyPodcastExistsWrapper = async (
   request: Request,
   response: Response,
-  next: NextFunction
+  next: NextFunction,
+  shouldExist: boolean
 ) => {
-  const {id_spotify} = request.query
-  
-  const data = await podcastService.getPodcastById(String(id_spotify))
-  
-  if(data) next(new Error('PODCAST_IS_ALREADY_EXIST'))
+  const {id_spotify} = request.body.data
 
-  next()
+  const data = await podcastService.getPodcastById(id_spotify)
+  if (data) {
+    shouldExist ? next() : next(new Error('PODCAST_IS_ALREADY_EXIST'));
+  } else {
+    shouldExist ? next(new Error('PODCAST_DOES_NOT_EXIST')) : next();
+  }
 
+}
+
+
+//过滤引流链接和特定字眼的方法
+export const filterDescTool = (description:string) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g; // 匹配链接的正则表达式
+
+  // 过滤链接
+  let filteredDesc = description.replace(urlRegex, '');
+  // 过滤特定字眼
+
+  return filteredDesc;
 }

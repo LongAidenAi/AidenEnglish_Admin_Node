@@ -93,5 +93,7 @@ export const getPodcastById = async (
      `
      const [data] = await connection.promise().query(statement, id_spotify);
 
-     return data[0] ? data[0] : null
+      return data[0] ? data[0] : null
+
  }
+

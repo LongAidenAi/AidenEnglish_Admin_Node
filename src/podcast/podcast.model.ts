@@ -10,6 +10,7 @@ export interface PodcastInfoModel {
     lastest_updatetime_spotify: string
     lastest_updatetime_taddy: string
     description: string
+    trans_description: string
 }
 
 export interface updatePodcastInfoModel {

@@ -1,12 +1,16 @@
 import express from "express";
 import cors from 'cors'
 import { ALLOW_ORIGIN } from './app.config'
-import podcastRouter from '../podcast/podcast.router'
+
+
 import appRouter from "./app.router";
+import podcastRouter from '../podcast/podcast.router'
+import episodeRouter from '../episode/episode.router'
 
-import { podcastErrorHandler } from '../podcast/podcast.errorHandler'
+
 import { appErrorHandler } from "./app.errorHandler";
-
+import { podcastErrorHandler } from '../podcast/podcast.errorHandler'
+import { episodeErrorHandler } from '../episode/episode.errorHandler'
 /**
  * 创建应用
  */
@@ -17,16 +21,20 @@ const app = express()
  */
 app.use(cors({
     origin: ALLOW_ORIGIN,
-    exposedHeaders: 'X-Total-Content'
+    exposedHeaders: 'X-Total-Content',
 }))
 
 /**
  * 处理json
  */
-app.use(express.json())
+app.use(express.json({ limit: '300mb' }))
+app.use(express.urlencoded({ extended: true }));
 
-app.use(podcastRouter,appRouter)
+app.use(appRouter,podcastRouter,episodeRouter)
 
-app.use(podcastErrorHandler,appErrorHandler)
+app.use(
+    podcastErrorHandler,
+    episodeErrorHandler,
+    appErrorHandler)
 
 export default app

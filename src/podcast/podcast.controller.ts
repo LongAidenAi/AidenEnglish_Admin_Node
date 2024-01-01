@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import * as podcastHttps from './podcast.https';
 import * as podcastService from './podcast.service';
-import { arrangeSearchNewPodcastInfo, arrangeUpdatePodcastInfo } from './podcast.middleware';
+import { arrangeSearchNewPodcastInfo, arrangeUpdatePodcastInfo,filterDescTool } from './podcast.middleware';
+import * as episodeHttps from '../episode/episode.https';
+
 
 /***
  * 搜索新播客
@@ -11,7 +13,7 @@ export const searchNewPodcast = async (
     response: Response,
     next: NextFunction
 ) => {
-    const {headers: {authorization},query: {podcast_name,id_spotify}} = request
+    const {headers: {authorization},body:{data: {podcast_name,id_spotify}}} = request
     const spotifyToken = authorization.split(' ')[1];
     try {
         const spotifyData = await podcastHttps.searchSpotifyPodcast({spotifyToken,id_spotify})
@@ -119,4 +121,38 @@ export const updatePodcast = async (
           });
     }
 
+}
+
+/***
+ * 调用openai整理播客description的数据
+ */
+export const arrangedesc = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+) => {
+    const {description,switchHand} = request.query
+    try {
+        if(switchHand == 'true') {
+            const dataReject = filterDescTool(String(description))
+
+             //百度api
+            const dataTrans = await episodeHttps.transDescTool(String(dataReject))
+
+            response.status(201).send({dataReject,dataTrans})
+        } else {
+            //剔除引流链接
+            const dataReject = await podcastHttps.rejectDescLink(String(description))
+
+            //翻译成中文 openai api
+            // const dataTrans = await podcastHttps.transDesc(String(dataReject))
+
+            //百度api
+            const dataTrans = await episodeHttps.transDescTool(String(dataReject))
+
+            response.status(201).send({dataReject,dataTrans})
+        }
+    } catch (error) {
+        next(new Error('ARRANGE_PODCAST_DESCRIPTION_FAILED'));
+    }
 }

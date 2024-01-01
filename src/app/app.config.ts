@@ -24,15 +24,50 @@ export const {
 export const ALLOW_ORIGIN = process.env['ALLOW_ORIGIN']
 
 /**
- * 第三方api服务
+ * spotify API
  */
 export const {
   SPOTIFY_ACCOUNTS_BASE_URL,
   SPOTIFY_CLIENT_ID,
   SPOTIFY_CLIENT_SECRET,
   SPOTIFY_API_BASE_URL,
-  TADDY_BASE_URL,
-  TADDY_X_USER_ID,
-  TADDY_X_API_KEY
 } = process.env;
 
+/**
+ * taddy API
+ */
+export const {
+  TADDY_BASE_URL,
+  TADDY_X_USER_ID,
+  TADDY_X_API_KEY,
+} = process.env;
+
+/**
+ * openai API
+ */
+export const {
+  OPENAI_ORGANIZATION_ID,
+  OPENAI_API_KEY,
+  OPENAI_BASEURL_PROXY
+} = process.env;
+
+/**
+ * 百度翻译 API
+ */
+export const {
+  BAIDU_TRANS_APPID,
+  BAIDU_TRNAS_KEY,
+  BAIDU_TRNAS_SALT,
+  BAIDU_TRANS_BASE_URL
+} = process.env;
+
+/**
+ * 百度网盘 API
+ */
+export const {
+  BAIDU_DISK_BASE_URL,
+  BAIDU_DISK_APPID,
+  BAIDU_DISK_APPKEY,
+  BAIDU_DISK_SECRETKEY,
+  BAIDU_DISK_SIGNKEY
+} = process.env;
