@@ -78,7 +78,10 @@ export const addEpisodes = async (
         const data = await episodeService.saveEpisodes(episodeList)
         response.status(201).send(data)
     } catch (error) {
-        
+        next({
+            message: 'SAVE_EPISODES_FAILED',
+            originalError: error  
+          });
     }
 }
 

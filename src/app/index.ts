@@ -6,11 +6,12 @@ import { ALLOW_ORIGIN } from './app.config'
 import appRouter from "./app.router";
 import podcastRouter from '../podcast/podcast.router'
 import episodeRouter from '../episode/episode.router'
-
+import transcriptRouter from '../transcript/transcript.router'
 
 import { appErrorHandler } from "./app.errorHandler";
 import { podcastErrorHandler } from '../podcast/podcast.errorHandler'
 import { episodeErrorHandler } from '../episode/episode.errorHandler'
+import { transcriptErrorHandler } from '../transcript/transcript.errorHandler'
 /**
  * 创建应用
  */
@@ -30,11 +31,16 @@ app.use(cors({
 app.use(express.json({ limit: '300mb' }))
 app.use(express.urlencoded({ extended: true }));
 
-app.use(appRouter,podcastRouter,episodeRouter)
+app.use(
+    appRouter,
+    podcastRouter,
+    episodeRouter,
+    transcriptRouter)
 
 app.use(
     podcastErrorHandler,
     episodeErrorHandler,
+    transcriptErrorHandler,
     appErrorHandler)
 
 export default app

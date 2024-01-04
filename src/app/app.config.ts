@@ -66,8 +66,17 @@ export const {
  */
 export const {
   BAIDU_DISK_BASE_URL,
+  BAIDU_DISK_UPLOAD_URL,
+  BAIDU_DISK_ACCESS_TOKEN,
   BAIDU_DISK_APPID,
   BAIDU_DISK_APPKEY,
   BAIDU_DISK_SECRETKEY,
   BAIDU_DISK_SIGNKEY
 } = process.env;
+
+/**
+ * deepgram apikey
+ */
+export const {
+  DEEPGRAM_APIKEY
+} = process.env

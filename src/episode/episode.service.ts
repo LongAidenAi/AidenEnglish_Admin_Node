@@ -29,7 +29,11 @@ import { connection } from "../app/connect/mysql";
     episode.podcast_id
   ]);
     const [data] = await connection.promise().query(statement, [values]);
-      return data ? data : null
+    if (data) {
+      return data
+   } else {
+      throw new Error('将episodes保存到数据库中失败');
+   }   
   }
 
 export const deletesaveEpisodes = async (

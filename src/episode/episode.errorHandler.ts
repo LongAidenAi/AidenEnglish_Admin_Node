@@ -16,6 +16,10 @@ export const episodeErrorHandler = (
         statusCode = 501;
         message = `服务端错误, 搜索episodes失败: : ${error.originalError}`
         break;  
+     case 'SAVE_EPISODES_FAILED':
+        statusCode = 501;
+        message = `服务端错误, 保存episodes失败: : ${error.originalError}`
+        break;  
       case 'DELETE_EPISODES_FAILED':
         statusCode = 501;
         message = `服务端错误, 删除episodes失败: : ${error.originalError}`

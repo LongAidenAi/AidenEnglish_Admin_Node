@@ -1,10 +1,11 @@
 import axios from 'axios'
 import {
     BAIDU_DISK_BASE_URL,
-    BAIDU_DISK_APPID,
+    BAIDU_DISK_ACCESS_TOKEN,
     BAIDU_DISK_APPKEY,
     BAIDU_DISK_SECRETKEY,
-    BAIDU_DISK_SIGNKEY
+    BAIDU_DISK_SIGNKEY,
+    BAIDU_DISK_UPLOAD_URL
 } from '../app.config'
 
 
@@ -17,9 +18,19 @@ const params = {
 
 export const apiDiskBaidu = axios.create({
     baseURL: BAIDU_DISK_BASE_URL,
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+    params: {
+        access_token: BAIDU_DISK_ACCESS_TOKEN
+    }
+})
+
+export const apiDiskBaiduUpload = axios.create({
+    baseURL: BAIDU_DISK_UPLOAD_URL,
+    params: {
+        method: 'upload',
+        access_token: BAIDU_DISK_ACCESS_TOKEN
     },
-    params
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
 })
 
