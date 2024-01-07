@@ -114,9 +114,10 @@ export const arrangeSearchEpisodeInfo = async (
             duration: duration,
             episodeNumber: item.episodeNumber,
             trans_description: transDesc,
-            transcript_url: ''
+            transcript_sign: '0'
           }
     }))
+    console.log(`已完成,共${taddyData.length}集`)
   return arrangedData
 }
 

@@ -9,12 +9,38 @@ import {
     SPOTIFY_API_BASE_URL
  } from '../../app/app.config';
 
+ const proxy = {
+    host: 'localhost',
+    port: 7890,
+    protocol: 'http' 
+};
+
+export const apiTokenSpotify = axios.create({
+    baseURL: SPOTIFY_ACCOUNTS_BASE_URL,
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    params: {
+        'grant_type': 'client_credentials',
+        'client_id': SPOTIFY_CLIENT_ID,
+        'client_secret': SPOTIFY_CLIENT_SECRET
+      },
+      proxy: {
+        host: proxy.host,
+        port: proxy.port,
+        protocol: proxy.protocol
+      }
+})
+
 export const apiHTTPSpotify = (token:string) => {
     const connnect = axios.create({
         baseURL: SPOTIFY_API_BASE_URL,
         headers: {
             'Authorization': `Bearer ${token}`,
-        }
+        },
+        proxy: {
+            host: proxy.host,
+            port: proxy.port,
+            protocol: proxy.protocol
+          }
     })
     return connnect
 }
@@ -28,13 +54,5 @@ export const apiHttpTaddy = axios.create({
     }
 });
 
-export const apiTokenSpotify = axios.create({
-    baseURL: SPOTIFY_ACCOUNTS_BASE_URL,
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    params: {
-        'grant_type': 'client_credentials',
-        'client_id': SPOTIFY_CLIENT_ID,
-        'client_secret': SPOTIFY_CLIENT_SECRET
-      }
-})
+
 

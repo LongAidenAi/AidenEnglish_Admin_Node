@@ -51,7 +51,10 @@ export const apiDeepGramTranscribe = async (
             }
           );
 
-        if (error) throw new Error('调用deepgram的api转换音频到文本失败');
+        if (error) {
+            console.log(error.message)
+            throw new Error('调用deepgram的api转换音频到文本失败');
+        }
 
         return result
 

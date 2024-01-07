@@ -15,7 +15,7 @@ export const getSpotifyToken = async (
         const data = await appHttps.SpotifyToken()
 
         const result = {
-            token: data.access_token,  
+            token: data.data.access_token,  
             create_time: String(Date.now())
         };
 

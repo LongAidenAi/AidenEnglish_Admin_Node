@@ -20,7 +20,7 @@ export const searchNewPodcast = async (
         
         const taddyData = await podcastHttps.searchTaddyPodcast(String(podcast_name))
         
-        const searchPodcastInfo = arrangeSearchNewPodcastInfo(spotifyData,taddyData)
+        const searchPodcastInfo = await arrangeSearchNewPodcastInfo(spotifyData,taddyData)
 
         response.status(201).send(searchPodcastInfo)
     } catch (error) {

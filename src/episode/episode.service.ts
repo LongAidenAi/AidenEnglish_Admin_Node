@@ -8,7 +8,7 @@ import { connection } from "../app/connect/mysql";
   ) => {
     const statement = `
     INSERT INTO episodes 
-    (podcast_name, podcast_id_spotify, podcast_id_taddy, podcast_image_spotify, name, id_taddy, image, audioUrl, update_time, episodeNumber, duration, description, trans_description, transcript_url,podcast_id) 
+    (podcast_name, podcast_id_spotify, podcast_id_taddy, podcast_image_spotify, name, id_taddy, image, audioUrl, update_time, episodeNumber, duration, description, trans_description, transcript_sign,podcast_id) 
     VALUES ?;
   `;
   const values = episodeList.map(episode => [
@@ -25,7 +25,7 @@ import { connection } from "../app/connect/mysql";
     episode.duration,
     episode.description,
     episode.trans_description,
-    episode.transcript_url,
+    episode.transcript_sign,
     episode.podcast_id
   ]);
     const [data] = await connection.promise().query(statement, [values]);

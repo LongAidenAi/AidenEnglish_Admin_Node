@@ -4,6 +4,10 @@ const router = express.Router();
 
 router.get('/transcript/getBaiduDiskFileList', transcriptController.getBaiduDiskFileList)
 
-router.get('/transcript/transcribe',transcriptController.transcribe)
+router.get('/transcript/saveTranscriptInLocal',transcriptController.saveTranscriptInLocal)
+
+router.get('/transcript/fixAudioUrl',transcriptController.fixAudioUrl)
+
+router.get('/transcript/getAllPodcasts',transcriptController.getAllPodcasts)
 
 export default router;

@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import * as podcastService from './podcast.service';
 import openai from '../app/connect/openai';
+import axios from 'axios';
 
 /***
  * 整理searchNewPodcast中获得的数据 
  */
-export const arrangeSearchNewPodcastInfo = (
+export const arrangeSearchNewPodcastInfo = async(
   spotifyData:any,taddyData:any
 ) => {
-
   const matchedtaddyData = taddyData.filter((item:any) => 
     item.name === spotifyData.name
   );

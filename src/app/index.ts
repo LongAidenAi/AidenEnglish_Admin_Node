@@ -7,6 +7,8 @@ import appRouter from "./app.router";
 import podcastRouter from '../podcast/podcast.router'
 import episodeRouter from '../episode/episode.router'
 import transcriptRouter from '../transcript/transcript.router'
+import testRouter from '../test/test.router'
+
 
 import { appErrorHandler } from "./app.errorHandler";
 import { podcastErrorHandler } from '../podcast/podcast.errorHandler'
@@ -35,7 +37,8 @@ app.use(
     appRouter,
     podcastRouter,
     episodeRouter,
-    transcriptRouter)
+    transcriptRouter,
+    testRouter)
 
 app.use(
     podcastErrorHandler,

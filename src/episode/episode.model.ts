@@ -13,5 +13,5 @@ export interface EpisodeInfoModel {
     duration: string
     description: string
     trans_description: string
-    transcript_url: string
+    transcript_sign: string
 }

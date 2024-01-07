@@ -16,9 +16,13 @@ export const transcriptErrorHandler = (
         statusCode = 501;
         message = `服务端错误, 获取百度网盘文件列表失败: ${error.originalError}`
         break; 
-      case 'TRANSCRIBE_AUDIO_TO_TEXT_FAILED':
+      case 'SAVE_TRANSCRIPT_IN_LOCAL_FAILED':
         statusCode = 501;
-        message = `服务端错误, 音频转文字失败: ${error.originalError}`
+        message = `服务端错误,  文字稿存入本地失败: ${error.originalError}`
+        break;  
+      case 'FIX_AUDIO_URL_FAILED':
+        statusCode = 501;
+        message = `服务端错误,  替换每期播客新的audioUrl失败: ${error.originalError}`
         break;  
     }
 
