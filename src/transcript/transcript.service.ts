@@ -63,7 +63,6 @@ export const saveEpisodesTranscriptInfo = async (
     item.fsids,
     item.path
   ]);
-  console.log(values)
 
   const statement = `
     INSERT INTO episodes_transcript 
@@ -114,7 +113,6 @@ export const judgeTranscriptSign = async (
   try {
     const [data] = await connection.promise().query(statement, podcast_id_spotify);
     // 返回插入结果或进行其他后续操作
-    // console.log('success, 获取文字稿是否获取的状态')
     return data[0].transcript_sign ? data[0].transcript_sign : null
   } catch (error) {
     console.error('fail, 获取文字稿是否获取的状态失败:', error.message);
@@ -144,7 +142,7 @@ export const replaceAudioUrl = async (
 }
 
 /***
- * 
+ * 获取episode音频信息
  */
 export const getEpisodesAudioUrlInfo = async (
   id_spotify:string
