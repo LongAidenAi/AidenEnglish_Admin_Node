@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as transcriptHttps from './transcript.https';
 import * as transcriptService from './transcript.service';
 import * as podcastService from '../podcast/podcast.service';
-import {  arrangeTranscriptInfo, convertToArray, findMissFilesInLocalFiles, formatfileName } from './transcript.middleware';
+import {  arrangeEpisodesTranscriptData, arrangeTranscriptInfo, convertToArray, findMissFilesInLocalFiles, formatfileName } from './transcript.middleware';
 import fs from 'fs'
 /***
  * 得到百度网盘文件目录
@@ -28,6 +28,48 @@ enum FilePath {
     localPath = 'F:/Work_Resources/AidenEnglish_Project/cloud_backup/baidu_disk/apps/aidenenglish/podcasts',
     baiduUploadPath = '/apps/aidenenglish/podcasts'
 }
+
+
+/***
+ * 把本地的文字稿上传至百度网盘
+ */
+export const uploadTranscripts = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+) => {
+    const {id_spotify} = request.query
+    try {
+      const episodesInfo = await transcriptService.getEpisodesInfo(String(id_spotify),null)
+      const episodesInfoList = convertToArray(episodesInfo)
+
+      const resultArray = await Promise.all(episodesInfoList.map(async (item: any, index: number) => {
+        let episodes_transcriptInfo: any;
+        if (item.transcript_sign === '0') {
+              const fileName = formatfileName(item);
+              const localFileDir = `${FilePath.localPath}/${fileName.podcastDir}`;
+              const localFilePath = `${localFileDir}/${fileName.episodeDir}.json`;
+              const baiduFilePath = `${FilePath.baiduUploadPath}/${fileName.podcastDir}/${fileName.episodeDir}.json`;
+
+              const localFile = fs.readFileSync(localFilePath, 'utf8');
+              const baiduData = await transcriptHttps.apiBaiduDiskUpload(baiduFilePath,localFile,fileName.episodeDir);
+              episodes_transcriptInfo = arrangeEpisodesTranscriptData(item.id,baiduData)
+          }
+          return episodes_transcriptInfo
+      }));
+      await transcriptService.saveEpisodesTranscriptInfo(resultArray)
+      await transcriptService.changeTranscriptSigns(String(id_spotify),'1')
+      response.status(201).send()
+    } catch (error) {
+      console.log(error.message)
+      next({
+          message: 'UPLOAD_TRANSCRIPT_TO_BAIDUDISK_FAILED',
+          originalError: error.message  
+        });
+    }
+}
+
+
 /***
  * 
  */
@@ -197,6 +239,7 @@ export const getAllPodcasts = async (
       const AllPodcastInfoList = convertToArray(allPodcastList)
 
       const data = await Promise.all(AllPodcastInfoList.map(async (item: any, index: number) => {
+        const transcript_sign = await transcriptService.judgeTranscriptSign(item.id_spotify)
 
         const specialCharsRegex = /[^\w\s]/g;
         const podcastDir = `${String(item.id)}.${String(item.podcast_name).replace(specialCharsRegex,'_')}`
@@ -212,6 +255,11 @@ export const getAllPodcasts = async (
           const missingFilesIdList = convertToArray(missingFilesId)
           item.missingFilesId = missingFilesIdList.map((item: { id: any; }) => item.id);
 
+        }
+        if(transcript_sign === '1') {
+          item.transcript_sign = 1
+        } else {
+          item.transcript_sign = 0
         }
         return item
       }));

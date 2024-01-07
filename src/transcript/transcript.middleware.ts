@@ -22,9 +22,9 @@ export const formatfileName = (item: any) => {
 }
 
 export const arrangeEpisodesTranscriptData = (episodeId:any,baiduData: any) => {
-    const episode_id = episodeId ? Number(episodeId) : null
-    const fsids = baiduData.fs_id ? String(baiduData.fs_id) : ''
-    const path = baiduData.path ? String(baiduData.path) : ''
+    const episode_id = Number(episodeId)
+    const fsids = String(baiduData.fs_id)
+    const path = String(baiduData.path)
     return {
         episode_id,
         fsids,

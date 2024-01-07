@@ -58,12 +58,12 @@ export const getEpisodesInfo = async (
 export const saveEpisodesTranscriptInfo = async (
     episodes_transcriptInfoList: any[]
 ) => {
-
   const values = episodes_transcriptInfoList.map((item) => [
     item.episode_id,
     item.fsids,
     item.path
   ]);
+  console.log(values)
 
   const statement = `
     INSERT INTO episodes_transcript 
@@ -81,6 +81,47 @@ export const saveEpisodesTranscriptInfo = async (
     throw new Error(`将文字稿相关信息插入数据库失败${error.message}`);
   }
 };
+
+
+export const changeTranscriptSigns = async (
+  id_spotify: string,
+  signs: string
+) => {
+  const statement = `
+    UPDATE episodes
+    SET transcript_sign = ?
+    WHERE podcast_id_spotify = ?;
+  `
+
+  try {
+    await connection.promise().query(statement, [signs, id_spotify]);
+    console.log('success,修改文字稿是否存在的状态成功')
+  } catch (error) {
+    console.error('修改数据库中文字稿是否存在的状态，失败：:', error.message);
+    throw new Error(`修改数据库中文字稿是否存在的状态，失败：:${error.message}`);
+  }
+  
+}
+
+export const judgeTranscriptSign = async (
+  podcast_id_spotify: string
+) => {
+  const statement = `
+  SELECT transcript_sign
+  FROM episodes
+  WHERE podcast_id_spotify = ? AND episodeNumber = 1;
+  `
+  try {
+    const [data] = await connection.promise().query(statement, podcast_id_spotify);
+    // 返回插入结果或进行其他后续操作
+    // console.log('success, 获取文字稿是否获取的状态')
+    return data[0].transcript_sign ? data[0].transcript_sign : null
+  } catch (error) {
+    console.error('fail, 获取文字稿是否获取的状态失败:', error.message);
+    throw new Error(`fail, 获取文字稿是否获取的状态失败${error.message}`);
+  }
+}
+
 
 /***
  * 替换为新的audioUrl

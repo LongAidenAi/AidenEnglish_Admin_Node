@@ -22,7 +22,11 @@ export const transcriptErrorHandler = (
         break;  
       case 'FIX_AUDIO_URL_FAILED':
         statusCode = 501;
-        message = `服务端错误,  替换每期播客新的audioUrl失败: ${error.originalError}`
+        message = `服务端错误, 替换每期播客新的audioUrl失败: ${error.originalError}`
+        break;  
+      case 'UPLOAD_TRANSCRIPT_TO_BAIDUDISK_FAILED':
+        statusCode = 501;
+        message = `服务端错误, 将本地文字稿上传至百度网盘失败: ${error.originalError}`
         break;  
     }
 
