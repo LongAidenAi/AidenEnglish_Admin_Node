@@ -215,7 +215,6 @@ export const getAllPodcasts = async (
         }
         return item
       }));
-      console.log(data)
       response.status(201).send(data)
   } catch (error) {
       next({

@@ -14,7 +14,6 @@ export const getMissingFilesId = async (
   WHERE podcast_id = ? and episodeNumber IN (?);
   `;
 
-  console.log(podcast_id,missingFiles)
   try {
     const [data] = await connection.promise().query(statement,[podcast_id, missingFiles]);
     // 返回插入结果或进行其他后续操作
