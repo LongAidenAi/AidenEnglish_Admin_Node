@@ -8,7 +8,7 @@ dotenv.config();
 export const { APP_PORT } = process.env;
 
 /**
- * 数据仓库配置
+ * mysql 数据仓库配置
  */
 export const {
     MYSQL_HOST,

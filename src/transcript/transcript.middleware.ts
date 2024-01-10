@@ -59,3 +59,19 @@ export const findMissFilesInLocalFiles = (path: any) => {
 
     return missingFiles
 }
+
+/***
+ * 
+ */
+export const arrangeTranscriptData = (
+    transcriptData: any, episode_id: number
+) => {
+    return {
+        episode_id,
+        metaSummary: transcriptData.summary.metaSummary,
+        transSummary: transcriptData.summary.transSummary,
+        transcript: transcriptData.transcriptInfo.transcript,
+        paragraphs:  JSON.stringify(transcriptData.transcriptInfo.paragraphs),
+        words: JSON.stringify(transcriptData.transcriptInfo.words)
+    }
+}

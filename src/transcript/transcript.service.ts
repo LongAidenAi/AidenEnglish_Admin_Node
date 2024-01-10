@@ -40,7 +40,8 @@ export const getEpisodesInfo = async (
       transcript_sign,
       audioUrl
     FROM episodes
-    WHERE ${addAgain ? 'id IN (?)' : 'podcast_id_spotify = ?'};
+    WHERE ${addAgain ? 'id IN (?)' : 'podcast_id_spotify = ?'}
+    ORDER BY episodeNumber ASC;
   `;
   const params = addAgain ? [addAgain] : id_spotify;
   const [data] = await connection.promise().query(statement,params);
@@ -162,3 +163,27 @@ export const getEpisodesAudioUrlInfo = async (
        throw new Error('获取数据库中每期音频文件地址失败');
     }   
 }
+
+export const saveTranscript = async (transriptList: any[]) => {
+  const statement = `
+    INSERT INTO transcript 
+    (episode_id, transcript, metaSummary, transSummary, paragraphs, words) 
+    VALUES ?;
+  `;
+
+  const values = transriptList.map(item => [
+      item.episode_id,
+      item.transcript,
+      item.metaSummary,
+      item.transSummary,
+      item.paragraphs,
+      item.words,
+  ]);
+
+  const [data] = await connection.promise().query(statement, [values]);
+  if (data) {
+    return data;
+  } else {
+    throw new Error('将episodes保存到数据库中失败');
+  }
+};

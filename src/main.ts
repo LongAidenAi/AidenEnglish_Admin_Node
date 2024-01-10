@@ -11,9 +11,11 @@ app.listen(APP_PORT, () => {
  */
 connection.connect(error => {
   if (error) {
-    console.log('连接数据服务失败：', error.message);
+    console.log('连接msyql数据服务失败:', error.message);
     return;
   }
 
-  console.log(`成功连接数据服务，端口号${MYSQL_PORT}`);
+  console.log(`成功连接msyql数据服务, 端口号${MYSQL_PORT}`);
 });
+
+

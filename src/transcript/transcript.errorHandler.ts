@@ -28,6 +28,10 @@ export const transcriptErrorHandler = (
         statusCode = 501;
         message = `服务端错误, 将本地文字稿上传至百度网盘失败: ${error.originalError}`
         break;  
+      case 'SAVE_TRANSCRIPT_TO_DATABASE_FAILED':
+        statusCode = 501;
+        message = `服务端错误, 将本地文字稿存储至数据库失败: ${error.originalError}`
+        break;  
     }
 
     if(!statusCode) return next(error)
