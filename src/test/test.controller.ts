@@ -64,7 +64,7 @@ export const saveTranscript = async (
 ) => {
 
       const {id_spotify} = request.query
-      const episodesInfo = await transcriptService.getEpisodesInfo(String(id_spotify),null)
+      const episodesInfo = await transcriptService.getEpisodesInfo(Number(id_spotify),null)
       const episodesInfoList = convertToArray(episodesInfo)
       
 
@@ -87,4 +87,47 @@ export const saveTranscript = async (
       console.log(error.message)
       
     }
+}
+
+
+/***
+ * 
+ */
+export const previewAudio = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+) => {
+  const {id_spotify} = request.query
+  const authorization = request.headers['authorization'];
+  const token = authorization.replace('Bearer ', '');
+  
+  try {
+    const totalEpisodes = []
+    let pageIndex: number = 1;
+    let offset = 0
+    
+    while (true) {
+        offset = (pageIndex - 1) * 50
+        const spotifyMetaData = await testHttps.previewAudio(String(id_spotify),token,offset)
+        totalEpisodes.push(...spotifyMetaData)
+        console.log(totalEpisodes.length, spotifyMetaData.length,pageIndex)
+        if(spotifyMetaData.length < 50) {
+          console.log('done')
+            break 
+        }
+        pageIndex++ 
+    }
+    totalEpisodes.reverse();
+    const data = totalEpisodes.map((item) => {
+      return {
+        audio_preview_url: item.audio_preview_url,
+        update_item: item.release_date
+
+      }
+    });
+    response.status(201).send(data)
+  } catch (error) {
+    console.log('testController.previewAudio:'+ error)
+  }
 }

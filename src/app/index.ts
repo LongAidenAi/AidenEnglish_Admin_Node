@@ -8,12 +8,14 @@ import podcastRouter from '../podcast/podcast.router'
 import episodeRouter from '../episode/episode.router'
 import transcriptRouter from '../transcript/transcript.router'
 import testRouter from '../test/test.router'
+import tagRouter from '../tag/tag.router'
 
 
 import { appErrorHandler } from "./app.errorHandler";
 import { podcastErrorHandler } from '../podcast/podcast.errorHandler'
 import { episodeErrorHandler } from '../episode/episode.errorHandler'
 import { transcriptErrorHandler } from '../transcript/transcript.errorHandler'
+import { tagErrorHandler } from '../tag/tag.errorHandler'
 /**
  * 创建应用
  */
@@ -38,9 +40,11 @@ app.use(
     podcastRouter,
     episodeRouter,
     transcriptRouter,
-    testRouter)
+    testRouter,
+    tagRouter)
 
 app.use(
+    tagErrorHandler,
     podcastErrorHandler,
     episodeErrorHandler,
     transcriptErrorHandler,

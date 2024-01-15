@@ -8,7 +8,7 @@ export const saveNewPodcastInfo = async (
     options: PodcastInfoModel
   ) => {
         const statement = `
-        INSERT INTO podcasts
+        INSERT INTO podcast
         SET ?;
         `
         const [data] = await connection.promise().query(statement, options);
@@ -25,10 +25,9 @@ export const saveNewPodcastInfo = async (
  */
 export const ObtainAllPodcasts = async () => {
    const statement = `
-    SELECT * FROM podcasts;
+    SELECT * FROM podcast;
    `
    const [data] = await connection.promise().query(statement);
-   
    if (data) {
       return data;
    } else {
@@ -44,16 +43,15 @@ export const deletePodcastById = async (
 ) => {
    
    const statement = `
-      DELETE FROM podcasts 
+      DELETE FROM podcast 
       WHERE id_spotify = ?
     `;
-    const [data] = await connection.promise().query(statement,id_spotify);
-    
-    if (data) {
+    try {
+      const [data] = await connection.promise().query(statement,id_spotify);
       return data
-   } else {
+    } catch (error) {
       throw new Error('从数据库中删除播客失败');
-   }   
+    }
 }
    
 
@@ -66,7 +64,7 @@ export const upatePodcast = async (
 ) => {
    
    const statement = `
-     UPDATE podcasts
+     UPDATE podcast
      SET ?
      WHERE id_spotify = ?;
    `;
@@ -88,7 +86,7 @@ export const getPodcastById = async (
    const statement = `
      select 
        *
-     from podcasts
+     from podcast
      where id_spotify = ?
      `
      const [data] = await connection.promise().query(statement, id_spotify);

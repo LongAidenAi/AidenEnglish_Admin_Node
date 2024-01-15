@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { deepgram } from '../app/connect/deepgram';
 import fs from 'fs'
-import { apiHTTPSpotify } from 'src/app/connect/axios';
+import {  apiHTTPSpotify} from "../app/connect/axios"
 
 export const deepgramAPI = async (
   episodeAudioUrl: string
@@ -35,3 +35,13 @@ export const deepgramAPI = async (
 /***
  * 
  */
+export const previewAudio = async (
+  id_spotify: string, token: string, offset: number
+) => {
+    try {
+      const response = await apiHTTPSpotify(token).get(`/v1/shows/${id_spotify}/episodes?limit=50&offset=${offset}`)
+      return response.data.items
+    } catch (error) {
+      console.log('testHttps.previewAudio:' + error)
+    }
+}

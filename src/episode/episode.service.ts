@@ -4,43 +4,46 @@ import { connection } from "../app/connect/mysql";
   * 保存episodes
   */
  export const saveEpisodes = async (
-    episodeList: any
+    episodeList: any, isFreeSmaple: number
   ) => {
     const statement = `
-    INSERT INTO episodes 
-    (podcast_name, podcast_id_spotify, podcast_id_taddy, podcast_image_spotify, name, id_taddy, image, audioUrl, update_time, episodeNumber, duration, description, trans_description, transcript_sign,podcast_id) 
+    INSERT INTO episode 
+    (podcast_image_spotify,name,id_taddy,image,audio_url,audio_preview_url,update_time,episodeNumber,transcript_sign,duration,podcast_id,isFreeSample) 
     VALUES ?;
   `;
-  const values = episodeList.map(episode => [
-    episode.podcast_name,
-    episode.podcast_id_spotify,
-    episode.podcast_id_taddy,
-    episode.podcast_image_spotify,
-    episode.name,
-    episode.id_taddy,
-    episode.image,
-    episode.audioUrl,
-    episode.update_time,
-    episode.episodeNumber,
-    episode.duration,
-    episode.description,
-    episode.trans_description,
-    episode.transcript_sign,
-    episode.podcast_id
-  ]);
-    const [data] = await connection.promise().query(statement, [values]);
-    if (data) {
+  const values = episodeList.map((episode: any, index: number) => {
+   const isFreeSample = index < 3 ? 1 : 0; 
+ 
+   return [
+     episode.podcast_image_spotify,
+     episode.name,
+     episode.id_taddy,
+     episode.image,
+     episode.audio_url,
+     episode.audio_preview_url,
+     episode.update_time,
+     episode.episodeNumber,
+     episode.transcript_sign,
+     episode.duration,
+     episode.podcast_id,
+     isFreeSample 
+   ];
+ });
+    
+    try {
+      const [data] = await connection.promise().query(statement, [values]);
       return data
-   } else {
-      throw new Error('将episodes保存到数据库中失败');
-   }   
+    } catch (error) {
+      console.log(error)
+      throw new Error('添加每期播客新失败：'+error);
+    }
   }
 
 export const deletesaveEpisodes = async (
     podcast_id_spotify: string
  ) => {
     const statement = `
-       DELETE FROM episodes 
+       DELETE FROM episod 
        WHERE podcast_id_spotify = ?
      `;
      const [data] = await connection.promise().query(statement,podcast_id_spotify);

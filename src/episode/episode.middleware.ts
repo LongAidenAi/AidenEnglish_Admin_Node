@@ -8,16 +8,16 @@ import axios from 'axios';
  * 整理addEpisode中获得的数据    
  */
 export const arrangeSearchEpisodeInfo = async (
-  podcastInfo:any, taddyData:any, sortOrder: string   
+  podcastInfo:any, taddyData:any, sortOrder: string,PreviewAudiosList: any
 ) => {
     const arrangedData = await Promise.all(
       taddyData.map(async (item: any,index: number) => {
-          await new Promise<void>(resolve => {
-            let i = index
-            setTimeout(() => {
-              resolve(); 
-            }, i * 110);
-          });
+          // await new Promise<void>(resolve => {
+          //   let i = index
+          //   setTimeout(() => {
+          //     resolve(); 
+          //   }, i * 110);
+          // });
           const regex = new RegExp('^' + podcastInfo.podcast_name);
   
           const matched = item.name.match(regex);
@@ -27,7 +27,8 @@ export const arrangeSearchEpisodeInfo = async (
             item.name = item.name.replace(regex, ''); 
           }
         
-          if(!item.imageUrl) item.imageUrl = podcastInfo.image
+          if(!item.imageUrl) item.imageUrl = podcastInfo.image_spotify
+         
           const updatetime = formatData(item.datePublished)
           const duration = formatDuration(item.duration)
         
@@ -41,9 +42,8 @@ export const arrangeSearchEpisodeInfo = async (
             }
           }
           
-          const filterDesc = filterDescTool(item.description);
   
-          const transDesc = await episodeHttps.transDescTool(filterDesc)
+          // const transDesc = await episodeHttps.transDescTool(filterDesc)
           console.log(index)
           return {
             podcast_id: podcastInfo.id,
@@ -51,16 +51,18 @@ export const arrangeSearchEpisodeInfo = async (
             podcast_id_spotify: podcastInfo.id_spotify,
             podcast_id_taddy: podcastInfo.id_taddy,
             podcast_image_spotify: podcastInfo.image_spotify,
+            podcast_lastest_updatetime: podcastInfo.lastest_updatetime_taddy,
+            podcast_total_episodes: podcastInfo.total_episodes_taddy,
             name: item.name,
             id_taddy: item.uuid,
             image: item.imageUrl,
-            audioUrl: item.audioUrl,
-            description: filterDesc,
+            audio_url: item.audioUrl,
+            audio_preview_url: PreviewAudiosList[index].audio_preview_url,
             update_time: updatetime,
             duration: duration,
             episodeNumber: item.episodeNumber,
-            trans_description: transDesc,
-            transcript_sign: '0'
+            transcript_sign: 0,
+            preview_update_item: PreviewAudiosList[index].update_item
           }
     }))
     console.log(`已完成,共${taddyData.length}集`)
@@ -83,18 +85,4 @@ const formatDuration = (duration: any) => {
   const formattedSeconds = String(remainingSeconds).padStart(2, '0');
 
   return `${formattedMinutes}:${formattedSeconds}`;
-}
-
-// 过滤引流链接和特定字眼的方法
-const filterDescTool = (description:string) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/g; // 匹配链接的正则表达式
-
-  // 过滤链接
-  let filteredDesc = description.replace(urlRegex, '');
-
-  // 剔除特定链接 anything goes with emma chamberlain
-  const specificURL = 'Visit podcastchoices.com/adchoices'; 
-  filteredDesc = filteredDesc.replace(specificURL, '');
-
-  return filteredDesc;
 }

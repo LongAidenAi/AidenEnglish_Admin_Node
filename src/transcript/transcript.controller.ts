@@ -1,15 +1,17 @@
+import fs from 'fs'
+import PDFDocument from 'pdfkit';
 import { Request, Response, NextFunction } from 'express';
 import * as transcriptHttps from './transcript.https';
 import * as transcriptService from './transcript.service';
 import * as podcastService from '../podcast/podcast.service';
-import {  arrangeEpisodesTranscriptData, arrangeTranscriptData, arrangeTranscriptInfo, convertToArray, findMissFilesInLocalFiles, formatfileName } from './transcript.middleware';
-import fs from 'fs'
+import {  arrangeEpisodesTranscriptData, arrangeTransToPDF, arrangeTranscriptData, arrangeTranscriptInfo, convertToArray, downloadAudio, findMissFilesInLocalFiles, formatfileName, jointTranscript, sanitizeFilename } from './transcript.middleware';
+import axios from 'axios';
+import path from 'path';
 
-enum FilePath {
-    localPath = 'F:/Work_Resources/AidenEnglish_Project/cloud_backup/baidu_disk/apps/aidenenglish/podcasts',
-    baiduUploadPath = '/apps/aidenenglish/podcasts'
+enum FilePodcastPath {
+  localPathJSON = 'F:/Work_Resources/AidenEnglish_Project/cloud_backup/aidenenglish/podcast_json',
+  localPath = 'F:/Work_Resources/AidenEnglish_Project/cloud_backup/aidenenglish/podcast'
 }
-
 /**
  * 将音频转录为文字稿后保留在本地
  */
@@ -18,38 +20,41 @@ export const saveTranscriptInLocal = async (
   response: Response,
   next: NextFunction
 ) => { 
-  const {id_spotify,addAgain} = request.query
+  const {podcast_id,addAgain} = request.query
   try {
-      const episodesInfo = await transcriptService.getEpisodesInfo(String(id_spotify),addAgain)
+      const episodesInfo = await transcriptService.getEpisodesInfo(Number(podcast_id),addAgain)
       const episodesInfoList = convertToArray(episodesInfo)
-
-      let localFileDir: string;
+      
       let errorHandler: any[] = [];
       let counter = 0;
+      const podcastName = sanitizeFilename(episodesInfo[0].podcast_name)
+      const podcastDir = `${FilePodcastPath.localPathJSON}/${episodesInfo[0].podcast_id}.${podcastName}`
       await Promise.all(episodesInfoList.map(async (item: any, index: number) => {
-        if (item.transcript_sign === '0') {
-              const fileName = formatfileName(item);
-              localFileDir = `${FilePath.localPath}/${fileName.podcastDir}`;
-              const localFilePath = `${localFileDir}/${fileName.episodeDir}.json`;
-              
-              // 文本本地操作和上传至百度网盘
-              try {
-                // 判断本地目录是否存在，如果不存在则创建
-                if (!fs.existsSync(localFileDir)) fs.mkdirSync(localFileDir);
-                // 判断本地文件是否存在，如果不存在则写入
-                if (!fs.existsSync(localFilePath)) {
-                  const transcriptInfoJSON = await deepgramProccess(item.audioUrl);
-                  fs.writeFileSync(localFilePath, transcriptInfoJSON);
-                  console.log(`${++counter}:  ${fileName.episodeDir}.json，写入成功`)
-                }
-              } catch (error) {
-                errorHandler.push(item.id)
-                console.error(`episode_id为: ${item.id} ,的文字稿存入本地失败：${error.message}`);
-              }
+        if (item.transcript_sign === 0) {
+
+          const episodeName = sanitizeFilename(item.name)
+          const localFilePath = `${podcastDir}/${item.episodeNumber}.${episodeName}.json`
+          
+          try {
+            // 判断本地目录是否存在，如果不存在则创建
+            if (!fs.existsSync(podcastDir)) fs.mkdirSync(podcastDir, { recursive: true });
+
+            // 判断本地文件是否存在，如果不存在则写入
+            if (!fs.existsSync(localFilePath)) {
+              const transcriptInfoJSON = await deepgramProccess(item.audio_url);
+
+              fs.writeFileSync(localFilePath, transcriptInfoJSON);
+
+              console.log(`${++counter}:  ${item.episodeNumber}.${episodeName}.json: 写入成功`)
+            }
+          } catch (error) {
+              errorHandler.push(item.id)
+              console.error(`episode_id为: ${item.id} ,的文字稿存入本地失败：${error.message}`);
           }
+        }
       }));
 
-      const path = fs.readdirSync(localFileDir);
+      const path = fs.readdirSync(podcastDir);
       const data = {
         message: `数据库导出共${episodesInfoList.length}项，目录存在${path.length}项,实际写入: ${counter}项`,
         errorHandler
@@ -80,29 +85,35 @@ const deepgramProccess = async (audioUrl: string) => {
 /**
  * 将文字稿保存到数据库
  */
-export const saveTranscript = async (
+export const uploadTranscript = async (
   request: Request,
   response: Response,
   next: NextFunction
 ) => {
   try {
-    const {id_spotify} = request.query
-    const episodesInfo = await transcriptService.getEpisodesInfo(String(id_spotify),null)
+    const {podcast_id} = request.query
+    const episodesInfo = await transcriptService.getEpisodesInfo(Number(podcast_id),null)
     const episodesInfoList = convertToArray(episodesInfo)
 
+    const podcastName = sanitizeFilename(episodesInfo[0].podcast_name)
+    const podcastDir = `${FilePodcastPath.localPathJSON}/${episodesInfo[0].podcast_id}.${podcastName}`
+
     const resultArray = episodesInfoList.map((item: any, index: number) => {
-            const fileName = formatfileName(item);
-            const localFileDir = `${FilePath.localPath}/${fileName.podcastDir}`;
-            const localFilePath = `${localFileDir}/${fileName.episodeDir}.json`;
+      if (item.transcript_sign === 0) {
 
-            const localFile = fs.readFileSync(localFilePath, 'utf8');
-            const transcriptData = JSON.parse(localFile);
+        const episodeName = sanitizeFilename(item.name)
+        const localFilePath = `${podcastDir}/${item.episodeNumber}.${episodeName}.json`
+        
+        const transcriptFile = fs.readFileSync(localFilePath, 'utf8');
+        const transcriptData = JSON.parse(transcriptFile);
 
-            const transcriptInfo = arrangeTranscriptData(transcriptData,item.id)
-            return transcriptInfo 
+        const transcriptInfo = arrangeTranscriptData(transcriptData,item)
+        return transcriptInfo 
+      }
+
     });
     await transcriptService.saveTranscript(resultArray)
-    await transcriptService.changeTranscriptSigns(String(id_spotify),'1')
+    await transcriptService.changeTranscriptSigns(Number(podcast_id),1)
     response.status(201).send()
     
   } catch (error) {
@@ -122,9 +133,9 @@ export const fixAudioUrl = async (
     response: Response,
     next: NextFunction
 ) => {
-  const {id_spotify,removeRedirectPath} = request.query
+  const {podcast_id,removeRedirectPath} = request.query
 
-  const episodesInfo = await transcriptService.getEpisodesAudioUrlInfo(String(id_spotify))
+  const episodesInfo = await transcriptService.getEpisodesAudioUrlInfo(String(podcast_id))
   const episodesInfoList = convertToArray(episodesInfo)
 
   const regex = new RegExp(String(removeRedirectPath), 'g');
@@ -146,49 +157,159 @@ export const fixAudioUrl = async (
   }
 }
 
+
 /***
- * 从数据库得到所有播客
+ * 从数据库得到所有播客以及每期是否有文字稿的信息
  */
 export const getAllPodcasts = async (
   request: Request,
   response: Response,
   next: NextFunction
 ) => {
-  try {
-      const allPodcastList = await podcastService.ObtainAllPodcasts()
-
+    try {
+      const allPodcastList = await transcriptService.getAllPocastsShortInfo()
       const AllPodcastInfoList = convertToArray(allPodcastList)
 
+      
       const data = await Promise.all(AllPodcastInfoList.map(async (item: any, index: number) => {
-        const transcript_sign = await transcriptService.judgeTranscriptSign(item.id_spotify)
+        const transcriptInfo = await transcriptService.getTranscriptInfo(item.id)
 
-        const specialCharsRegex = /[^\w\s]/g;
-        const podcastDir = `${String(item.id)}.${String(item.podcast_name).replace(specialCharsRegex,'_')}`
-
-        const localFileDir = `${FilePath.localPath}/${podcastDir}`;
-        const path = fs.readdirSync(localFileDir);
-        item.localfileLength = path.length;
-
-        item.missingFiles = findMissFilesInLocalFiles(path)
-        if(item.missingFiles.length > 0) {
-          const missingFilesId = await transcriptService.getMissingFilesId(item.id,item.missingFiles) 
-
-          const missingFilesIdList = convertToArray(missingFilesId)
-          item.missingFilesId = missingFilesIdList.map((item: { id: any; }) => item.id);
-
-        }
-        if(transcript_sign === '1') {
-          item.transcript_sign = 1
-        } else {
+        if(transcriptInfo.transcript_sign === 0) {
           item.transcript_sign = 0
+          item.audio_url = transcriptInfo.audio_url
+        } else {
+          item.transcript_sign = 1
         }
+
+        const podcastName = sanitizeFilename(item.podcast_name)
+        const podcastDir = `${FilePodcastPath.localPath}/${item.id}.${podcastName}`
+        if(!fs.existsSync(podcastDir)) {
+          item.packLocal = 0
+        } else {
+          item.packLocal = 1
+        }
+
         return item
-      }));
+      }))
       response.status(201).send(data)
-  } catch (error) {
-      next({
-          message: 'GET_ALL_PODCAST_FAILED',
+    } catch (error) {
+        next({
+          message: 'GET_ALL_PODCAST_SHORT_INFO_FAILED',
           originalError: error  
       })
+    }
+}
+
+
+
+/***
+ * //数据库获取到音频和存文字稿，存入本地，方便之后开通买断某个播客的付费模式
+ */
+// export const packToLocal = async (
+//     request: Request,
+//     response: Response,
+//     next: NextFunction
+// ) => {
+//   const {podcast_id} = request.query
+//     try {
+//       const episodesInfo = await transcriptService.getEpisodesInfoPack(Number(podcast_id))
+//       const episodesInfoList = convertToArray(episodesInfo)
+
+//       const podcastName = sanitizeFilename(episodesInfo[0].podcast_name)
+//       const podcastDir = `${FilePodcastPath.localPath}/${episodesInfo[0].podcast_id}.${podcastName}`
+
+//       if (!fs.existsSync(podcastDir)) fs.mkdirSync(podcastDir, { recursive: true });
+
+//       episodesInfoList.forEach(async (item:any) => {
+//         item.name = sanitizeFilename(item.name);
+//         const episodeDir = `${podcastDir}/${item.episodeNumber}.${item.name}`;
+//         if (!fs.existsSync(episodeDir)) {
+//           fs.mkdirSync(episodeDir, { recursive: true });
+//         }
+
+//         const episodePathPDF = `${episodeDir}/${item.episodeNumber}.${item.name}.pdf`
+//         if(!fs.existsSync(episodePathPDF)) arrangeTransToPDF(item, episodePathPDF);
+        
+//         const episodePathMP3 = `${episodeDir}/${item.episodeNumber}.${item.name}.mp3`
+//         if(!fs.existsSync(episodePathMP3)) await downloadAudio(item, episodePathMP3)
+        
+//       });
+
+//     } catch (error) {
+//       next({
+//         message: 'PACK_TO_LOCAL_FAILED',
+//         originalError: error.message  
+//       });
+//     }
+// }
+
+export const packToLocal = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+const {podcast_id} = request.query
+  try {
+    const episodesInfo = await transcriptService.getEpisodesInfoPack(Number(podcast_id))
+    const episodesInfoList = convertToArray(episodesInfo)
+
+    const podcastName = sanitizeFilename(episodesInfo[0].podcast_name)
+    const podcastDir = `${FilePodcastPath.localPath}/${episodesInfo[0].podcast_id}.${podcastName}`
+
+    if (!fs.existsSync(podcastDir)) fs.mkdirSync(podcastDir, { recursive: true });
+
+    const getDirectoryRangeForEpisode = (episodeNumber: number) => {
+      const rangeSize = 10;
+      const startRange = Math.floor((episodeNumber - 1) / rangeSize) * rangeSize + 1;
+      const endRange = startRange + rangeSize - 1;
+      return `${startRange}-${endRange}`;
+    };
+
+    // 初始化操作完成计数器
+    let completedCount = 0; 
+    // 使用 for...of 循环来确保异步行为的顺序
+    for (const item of episodesInfoList) {
+      item.name = sanitizeFilename(item.name);
+      const directoryRange = getDirectoryRangeForEpisode(item.episodeNumber);
+      const episodeRangeDir = path.join(podcastDir, directoryRange);
+    
+      // 文字稿和音频目录
+      const textDir = path.join(episodeRangeDir, '文字稿');
+      const audioDir = path.join(episodeRangeDir, '音频');
+    
+      if (!fs.existsSync(textDir)) {
+        fs.mkdirSync(textDir, { recursive: true });
+      }
+      if (!fs.existsSync(audioDir)) {
+        fs.mkdirSync(audioDir, { recursive: true });
+      }
+    
+      // 文字稿和音频文件的路径
+      const episodePathPDF = path.join(textDir, `${item.episodeNumber}.${item.name}.pdf`);
+      const episodePathMP3 = path.join(audioDir, `${item.episodeNumber}.${item.name}.mp3`);
+    
+      // 处理文字稿文件
+      if (!fs.existsSync(episodePathPDF)) {
+        arrangeTransToPDF(item, episodePathPDF); // 假设这是一个同步函数
+      }
+      
+      // 处理音频文件
+      if (!fs.existsSync(episodePathMP3)) {
+        // 由于这是一个异步函数，我们在这里等待它
+        await downloadAudio(item, episodePathMP3);
+      }
+
+      completedCount++; 
+    }
+
+    console.log(`\n操作完成,总共完成${completedCount}项`)
+
+    const data = `\n操作完成,总共完成${completedCount}项`
+    response.status(201).send(data)
+  } catch (error) {
+    next({
+      message: 'PACK_TO_LOCAL_FAILED',
+      originalError: error.message  
+    });
   }
 }

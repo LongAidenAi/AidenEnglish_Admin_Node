@@ -8,6 +8,8 @@ router.get('/transcript/fixAudioUrl',transcriptController.fixAudioUrl)
 
 router.get('/transcript/getAllPodcasts',transcriptController.getAllPodcasts)
 
-router.get('/transcript/saveTranscript',transcriptController.saveTranscript)
+router.get('/transcript/uploadTranscript',transcriptController.uploadTranscript)
+
+router.get('/transcript/packToLocal', transcriptController.packToLocal)
 
 export default router;

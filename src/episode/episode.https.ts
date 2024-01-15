@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import {  apiHttpTaddy } from "../app/connect/axios"
+import {  apiHTTPSpotify, apiHttpTaddy } from "../app/connect/axios"
 import { apiTransBaidu} from '../app/connect/baiduTrans';
 import axios from 'axios';
 /**
@@ -23,22 +23,32 @@ export const searchTaddyEpisodesById = async (
           duration
           episodeNumber
           datePublished
-          description(
-            shouldStripHtmlTags: true
-          )
         }
       }
     }` 
-  
       try {
       const {data} = await apiHttpTaddy.post('/',{query})
       return data
   
       } catch (error) {
-          throw new Error('获取数据失败');
+          throw new Error('获取taddy播客每期的信息失败');
       }
   }
   
+/***
+ * 
+ */
+export const searchPreviewAudios = async (
+  id_spotify: string, token: string, offset: number
+) => {
+    try {
+      const response = await apiHTTPSpotify(token).get(`/v1/shows/${id_spotify}/episodes?limit=50&offset=${offset}`)
+      return response.data.items
+    } catch (error) {
+      throw new Error('获取spotify每期episode的preview音频失败');
+    }
+}
+
 /***
  * 调用百度翻译api
  */

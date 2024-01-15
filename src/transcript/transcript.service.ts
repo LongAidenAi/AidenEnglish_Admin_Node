@@ -2,6 +2,30 @@ import { connection } from "../app/connect/mysql";
 
 
 /***
+ * 
+ */
+export const getAllPocastsShortInfo = async (
+) => {
+  const statement = `
+  SELECT 
+    id,
+    podcast_name,
+    total_episodes_taddy,
+    image_spotify,
+    lastest_updatetime_taddy
+  from podcast
+ `
+ try {
+  const [data] = await connection.promise().query(statement);
+  // 返回插入结果或进行其他后续操作
+  return data
+} catch (error) {
+  console.error('获取所有播客简短信息失败:', error.message);
+  throw new Error(`获取所有播客简短信息失败:${error.message}`);
+}
+}
+
+/***
  * 通过每个episode的episodenumber和podcast_id获取episode的id
  */
 export const getMissingFilesId = async (
@@ -10,7 +34,7 @@ export const getMissingFilesId = async (
   const statement = `
   SELECT 
     id
-  FROM episodes
+  FROM episode
   WHERE podcast_id = ? and episodeNumber IN (?);
   `;
 
@@ -28,22 +52,23 @@ export const getMissingFilesId = async (
  * 根据id_spotify得到episode
  */
 export const getEpisodesInfo = async (
-    id_spotify: string,addAgain: any
+    podcast_id: number,addAgain: any
 ) => {
   const statement = `
-    SELECT 
-      id,
-      podcast_id,
-      episodeNumber,
-      podcast_name,
-      name,
-      transcript_sign,
-      audioUrl
-    FROM episodes
-    WHERE ${addAgain ? 'id IN (?)' : 'podcast_id_spotify = ?'}
-    ORDER BY episodeNumber ASC;
+      SELECT 
+      e.id,
+      e.podcast_id,
+      e.episodeNumber,
+      p.podcast_name,
+      e.name,
+      e.transcript_sign,
+      e.audio_url
+    FROM episode e
+    JOIN podcast p ON e.podcast_id = p.id
+    WHERE ${addAgain ? 'e.id IN (?)' : 'e.podcast_id = ?'}
+    ORDER BY e.episodeNumber ASC
   `;
-  const params = addAgain ? [addAgain] : id_spotify;
+  const params = addAgain ? [addAgain] : podcast_id;
   const [data] = await connection.promise().query(statement,params);
 
   if (data) {
@@ -53,48 +78,19 @@ export const getEpisodesInfo = async (
   }
 }
 
-/***
- * 
- */
-export const saveEpisodesTranscriptInfo = async (
-    episodes_transcriptInfoList: any[]
-) => {
-  const values = episodes_transcriptInfoList.map((item) => [
-    item.episode_id,
-    item.fsids,
-    item.path
-  ]);
-
-  const statement = `
-    INSERT INTO episodes_transcript 
-    (episode_id, fsids, path)
-    VALUES ?;
-  `;
-
-  try {
-    const [data] = await connection.promise().query(statement, [values]);
-    // 返回插入结果或进行其他后续操作
-    console.log('将文字稿插入数据库成功')
-    return data
-  } catch (error) {
-    console.error('将文字稿相关信息插入数据库失败:', error.message);
-    throw new Error(`将文字稿相关信息插入数据库失败${error.message}`);
-  }
-};
-
 
 export const changeTranscriptSigns = async (
-  id_spotify: string,
-  signs: string
+  podcast_id: number,
+  signs: number
 ) => {
   const statement = `
-    UPDATE episodes
+    UPDATE episode
     SET transcript_sign = ?
-    WHERE podcast_id_spotify = ?;
+    WHERE podcast_id = ?;
   `
 
   try {
-    await connection.promise().query(statement, [signs, id_spotify]);
+    await connection.promise().query(statement, [signs, podcast_id]);
     console.log('success,修改文字稿是否存在的状态成功')
   } catch (error) {
     console.error('修改数据库中文字稿是否存在的状态，失败：:', error.message);
@@ -103,24 +99,29 @@ export const changeTranscriptSigns = async (
   
 }
 
-export const judgeTranscriptSign = async (
-  podcast_id_spotify: string
+
+export const getTranscriptInfo = async (
+  podcast_id: number
 ) => {
   const statement = `
-  SELECT transcript_sign
-  FROM episodes
-  WHERE podcast_id_spotify = ? AND episodeNumber = 1;
+  SELECT 
+  	id,
+  	episodeNumber,
+  	transcript_sign,
+    audio_url
+  from episode
+  where podcast_id = ? and episodeNumber = 1;
   `
   try {
-    const [data] = await connection.promise().query(statement, podcast_id_spotify);
-    // 返回插入结果或进行其他后续操作
-    return data[0].transcript_sign ? data[0].transcript_sign : null
+    const [data] = await connection.promise().query(statement, podcast_id);
+    
+    return data[0]
+
   } catch (error) {
     console.error('fail, 获取文字稿是否获取的状态失败:', error.message);
     throw new Error(`fail, 获取文字稿是否获取的状态失败${error.message}`);
   }
 }
-
 
 /***
  * 替换为新的audioUrl
@@ -131,7 +132,7 @@ export const replaceAudioUrl = async (
   try {
     for (const item of episodesInfoList) {
       const statement = `
-        UPDATE episodes
+        UPDATE episode
         SET audioUrl = ?
         WHERE id = ?;
       `;
@@ -152,8 +153,8 @@ export const getEpisodesAudioUrlInfo = async (
     select 
     id,
     audioUrl
-   from episodes
-   where podcast_id_spotify = ?;
+   from episode
+   where podcast_id = ?;
    `
    const [data] = await connection.promise().query(statement,id_spotify);
 
@@ -167,12 +168,14 @@ export const getEpisodesAudioUrlInfo = async (
 export const saveTranscript = async (transriptList: any[]) => {
   const statement = `
     INSERT INTO transcript 
-    (episode_id, transcript, metaSummary, transSummary, paragraphs, words) 
+    (podcast_id, episode_id, episodeNumber, transcript, metaSummary, transSummary, paragraphs, words) 
     VALUES ?;
   `;
 
   const values = transriptList.map(item => [
+      item.podcast_id,
       item.episode_id,
+      item.episodeNumber,
       item.transcript,
       item.metaSummary,
       item.transSummary,
@@ -187,3 +190,37 @@ export const saveTranscript = async (transriptList: any[]) => {
     throw new Error('将episodes保存到数据库中失败');
   }
 };
+
+/***
+ * 获取数据库中episodes的相关信息，包括文字稿，音频等，之后会存入本地
+ */
+export const getEpisodesInfoPack = async (
+  podcast_id: number
+) => {
+  const statement = `
+    SELECT 
+      e.id,
+      e.podcast_id,
+      e.episodeNumber,
+      p.podcast_name,
+      e.name,
+      e.transcript_sign,
+      e.audio_url,
+      t.paragraphs,
+      t.metaSummary,
+      t.transSummary
+    FROM episode e
+    JOIN podcast p ON e.podcast_id = p.id
+    JOIN transcript t ON e.id = t.episode_id
+    WHERE e.podcast_id = ?
+    ORDER BY e.episodeNumber ASC
+    `;
+
+    try {
+      const [data] = await connection.promise().query(statement, podcast_id);
+      return data
+    } catch (error) {
+      console.error('获取三表拼接的数据失败:', error.message);
+      throw new Error(`获取三表拼接的数据失败:${error.message}`);
+    }
+}

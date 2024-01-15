@@ -13,12 +13,17 @@ export const searchEpisodes = async (
     next: NextFunction
 ) => {
     const {id_spotify,page, limit,allEpisodes,sortOrder} = request.body.data
+
+    const authorization = request.headers['authorization'];
+    const spotifyToken = authorization.replace('Bearer ', '');
     try {
         const podcastInfo = await podcastService.getPodcastById(id_spotify)
 
         const taddyData = await searchTaddyEpisodes(podcastInfo.id_taddy,page,limit,allEpisodes,sortOrder)
+
+        const PreviewAudiosList = await searchPreviewAudios(podcastInfo.id_spotify, spotifyToken)
         
-        const episodesInfo= await arrangeSearchEpisodeInfo(podcastInfo,taddyData,sortOrder)
+        const episodesInfo= await arrangeSearchEpisodeInfo(podcastInfo,taddyData,sortOrder,PreviewAudiosList)
 
         response.status(201).send(episodesInfo)
     } catch (error) {
@@ -60,7 +65,42 @@ export const searchTaddyEpisodes = async (
       
         return totalEpisodes
     } catch (error) {
-        throw new Error('从taddy接口获取播客集数失败');
+        throw new Error('获取taddy播客每期的信息失败');
+    }
+}
+
+
+/***
+ * 
+ */
+export const searchPreviewAudios = async (
+    id_spotify: string, spotifyToken: string
+) => {
+    try {
+        const totalEpisodes = []
+        let pageIndex: number = 1;
+        let offset = 0
+        
+        while (true) {
+            offset = (pageIndex - 1) * 50
+            const spotifyMetaData = await episodeHttps.searchPreviewAudios(String(id_spotify),spotifyToken,offset)
+            totalEpisodes.push(...spotifyMetaData)
+            console.log(totalEpisodes.length, spotifyMetaData.length,pageIndex)
+            if(spotifyMetaData.length < 50) {
+                break 
+            }
+            pageIndex++ 
+        }
+        totalEpisodes.reverse();
+        const data = totalEpisodes.map((item) => {
+          return {
+            audio_preview_url: item.audio_preview_url,
+            update_item: item.release_date
+          }
+        });
+        return data
+    } catch (error) {
+        throw new Error('获取spotify每期episode的preview音频失败');
     }
 }
 
@@ -72,10 +112,10 @@ export const addEpisodes = async (
     response: Response,
     next: NextFunction
 ) => {
-    const {episodeList} = request.body.data
+    const {episodeList, isFreeSmaple} = request.body.data
     
     try {
-        const data = await episodeService.saveEpisodes(episodeList)
+        const data = await episodeService.saveEpisodes(episodeList, isFreeSmaple)
         response.status(201).send(data)
     } catch (error) {
         next({

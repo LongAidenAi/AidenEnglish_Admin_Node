@@ -31,7 +31,15 @@ export const transcriptErrorHandler = (
       case 'SAVE_TRANSCRIPT_TO_DATABASE_FAILED':
         statusCode = 501;
         message = `服务端错误, 将本地文字稿存储至数据库失败: ${error.originalError}`
-        break;  
+        break; 
+      case 'GET_ALL_PODCAST_SHORT_INFO_FAILED':
+        statusCode = 501;
+        message = `服务端错误, 获取包含文字稿是否存在状态的播客信息失败: ${error.originalError}`
+        break; 
+      case 'PACK_TO_LOCAL_FAILED':
+        statusCode = 501;
+        message = `服务端错误, 将音频和文字稿打包存入本地失败: ${error.originalError}`
+        break
     }
 
     if(!statusCode) return next(error)
