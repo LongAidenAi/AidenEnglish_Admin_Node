@@ -45,14 +45,15 @@ export const savePodcastTag = async (
 
     podcastTagIdList.map((item: any) =>  Number(item))
     try {
-        const PodcastTag = await tagService.getPodcastTagInfoById(Number(podcast_id)) 
-        if(PodcastTag)  next(new Error('PODCAST_TAG_IS_EXIST'));
-
         const podcast = await podcastService.getPodcastById(Number(podcast_id))
+        if(!podcast) return next(new Error('PODCAST_IS_NOT_EXIST'));
 
-        if(!podcast) next(new Error('PODCAST_IS_NOT_EXIST'));
+        const PodcastTag = await tagService.getPodcastTagInfoById(Number(podcast_id)) 
+        if(PodcastTag)  return next(new Error('PODCAST_TAG_IS_EXIST'));
+        
         await tagService.savePodcastTag(podcastTagIdList,Number(podcast_id))
         await tagService.savePodcastLevel(Number(podcast_id),Number(totalScore),String(podcast_level))
+        response.status(201).send()
     } catch (error) {
         next({
             message: 'SAVE_PODCAST_TAG_FAILED',

@@ -65,12 +65,7 @@ export const getPodcastTagInfoById = async (
   FROM podcast_level
   WHERE podcast_id = ?
 `
-try {
   const [data] = await connection.promise().query(statement, podcast_id);
-
   return data[0] ? data[0] : null
-} catch (error) {
-  console.log(error)
-  throw new Error(`保存播客难度等级失败:${error.message}`);
-}
+
 }

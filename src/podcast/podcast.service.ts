@@ -107,12 +107,7 @@ export const getPodcastById = async (
       where id = ?;
    `
 
-   try {
       const [data] = await connection.promise().query(statement, podcast_id);
-    
       return data[0] ? data[0] : null
-    } catch (error) {
-      console.log(error)
-      throw new Error(`获取播客id失败:${error.message}`);
-    }
+
 }
