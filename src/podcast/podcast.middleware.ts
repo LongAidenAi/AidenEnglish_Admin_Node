@@ -76,7 +76,7 @@ const VerifyPodcastExistsWrapper = async (
 ) => {
   const {id_spotify} = request.body.data
 
-  const data = await podcastService.getPodcastById(id_spotify)
+  const data = await podcastService.getPodcastByIdSpotify(id_spotify)
   if (data) {
     shouldExist ? next() : next(new Error('PODCAST_IS_ALREADY_EXIST'));
   } else {

@@ -17,7 +17,7 @@ export const searchEpisodes = async (
     const authorization = request.headers['authorization'];
     const spotifyToken = authorization.replace('Bearer ', '');
     try {
-        const podcastInfo = await podcastService.getPodcastById(id_spotify)
+        const podcastInfo = await podcastService.getPodcastByIdSpotify(id_spotify)
 
         const taddyData = await searchTaddyEpisodes(podcastInfo.id_taddy,page,limit,allEpisodes,sortOrder)
 

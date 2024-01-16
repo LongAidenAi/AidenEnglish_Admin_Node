@@ -1,33 +1,62 @@
 import { Request, Response, NextFunction } from 'express';
 import * as tagService from './tag.service';
 import { convertToArray } from '../transcript/transcript.middleware';
-
+import { arrangeMetaTagList } from './tag.middleware';
+import * as podcastService from '../podcast/podcast.service'
 /***
- * 词频分析
+ * 获取标签列表
  */
-export const wordAnalysis = async (
+export const getTagList = async (
     request: Request,
     response: Response,
     next: NextFunction
 ) => {
     try {
-        const wordData = await tagService.getWordList()
-        const transcriptText = await tagService.getTranscriptText(1)
+        const data = await tagService.getTagList()
+        const metaTagList = convertToArray(data)
 
-        const wordDataList = convertToArray(wordData)
+        const tagList = arrangeMetaTagList(metaTagList)
 
-        const wordList = wordDataList.map(item => {
-            return item.word
-        })
-
-        const data = {
-            wordList,transcriptText
-        }
-        response.status(201).send(data)
+        response.status(201).send(tagList)
+        
     } catch (error) {
         next({
-            message: 'WORD_ANALYSIS_FAILED',
-            originalError: error  
-        })
+            message: 'GET_TAG_LIST_FAILED',
+            originalError: error.message  
+        });
+    }
+}
+
+/***
+ * 保存pdocast的标签
+ */
+export const savePodcastTag = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+) => {
+    const {
+        podcast_id,
+        totalScore,
+        podcast_level,
+        tagIdList
+    } = request.query
+    const podcastTagIdList = convertToArray(tagIdList)
+
+    podcastTagIdList.map((item: any) =>  Number(item))
+    try {
+        const PodcastTag = await tagService.getPodcastTagInfoById(Number(podcast_id)) 
+        if(PodcastTag)  next(new Error('PODCAST_TAG_IS_EXIST'));
+
+        const podcast = await podcastService.getPodcastById(Number(podcast_id))
+
+        if(!podcast) next(new Error('PODCAST_IS_NOT_EXIST'));
+        await tagService.savePodcastTag(podcastTagIdList,Number(podcast_id))
+        await tagService.savePodcastLevel(Number(podcast_id),Number(totalScore),String(podcast_level))
+    } catch (error) {
+        next({
+            message: 'SAVE_PODCAST_TAG_FAILED',
+            originalError: error.message  
+        });
     }
 }

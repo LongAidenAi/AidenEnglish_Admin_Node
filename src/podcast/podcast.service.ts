@@ -80,7 +80,7 @@ export const upatePodcast = async (
 /**
  * 根据spotify的id获取到对应播客的信息
  */
-export const getPodcastById = async (
+export const getPodcastByIdSpotify = async (
    id_spotify: string
  ) => {
    const statement = `
@@ -95,3 +95,24 @@ export const getPodcastById = async (
 
  }
 
+/***
+ * 判断播客是否存在
+ */
+export const getPodcastById = async (
+   podcast_id: number
+) => {
+   const statement = `
+      select id
+      from podcast
+      where id = ?;
+   `
+
+   try {
+      const [data] = await connection.promise().query(statement, podcast_id);
+    
+      return data[0] ? data[0] : null
+    } catch (error) {
+      console.log(error)
+      throw new Error(`获取播客id失败:${error.message}`);
+    }
+}
