@@ -6,6 +6,7 @@ import { connection } from "../app/connect/mysql";
  export const saveEpisodes = async (
     episodeList: any, isFreeSample: number
   ) => {
+
     const statement = `
     INSERT INTO episode 
     (name,id_taddy,image,audio_url,audio_preview_url,update_time,episodeNumber,transcript_sign,duration,podcast_id,isFreeSample) 
@@ -13,7 +14,9 @@ import { connection } from "../app/connect/mysql";
   `;
   const values = episodeList.map((episode: any, index: number) => {
 
-    if(!isFreeSample) isFreeSample = index < 3 ? 1 : 0; 
+    if(index < isFreeSample) {
+      episode.isFreeSample = 1
+    }
  
    return [
      episode.name,
@@ -29,7 +32,7 @@ import { connection } from "../app/connect/mysql";
      episode.isFreeSample 
    ];
  });
-    
+   
     try {
       const [data] = await connection.promise().query(statement, [values]);
       return data
