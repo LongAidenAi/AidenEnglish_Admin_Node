@@ -19,7 +19,7 @@ export const deepgramAPI = async (
           );
         if (error) {
             console.log(error.message)
-            // throw new Error('调用deepgram的api转换音频到文本失败');
+            throw new Error('调用deepgram的api转换音频到文本失败');
         }
         if(result) {
             return result
@@ -27,7 +27,7 @@ export const deepgramAPI = async (
 
     } catch (error) {
         console.log(error.message)
-        // throw new Error(error.message);
+        throw new Error(error.message);
     }
 }
 

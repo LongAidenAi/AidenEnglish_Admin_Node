@@ -112,10 +112,10 @@ export const addEpisodes = async (
     response: Response,
     next: NextFunction
 ) => {
-    const {episodeList, isFreeSmaple} = request.body.data
+    const {episodeList, isFreeSample} = request.body.data
     
     try {
-        const data = await episodeService.saveEpisodes(episodeList, isFreeSmaple)
+        const data = await episodeService.saveEpisodes(episodeList, isFreeSample)
         response.status(201).send(data)
     } catch (error) {
         next({

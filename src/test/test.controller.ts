@@ -18,6 +18,10 @@ export const deepgram = async (
         const data = await testHttps.deepgramAPI(String(episodeAudioUrl))
         response.status(201).send(data)
     } catch (error) {
+      next({
+        message: 'DEEPGRAM_FAILED',
+        originalError: error  
+      });
     }
 }
 

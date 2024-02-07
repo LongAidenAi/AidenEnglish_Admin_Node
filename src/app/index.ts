@@ -9,6 +9,8 @@ import episodeRouter from '../episode/episode.router'
 import transcriptRouter from '../transcript/transcript.router'
 import testRouter from '../test/test.router'
 import tagRouter from '../tag/tag.router'
+import specialTestRouter from '../specialTest/specialTest.router'
+import storageRouter from '../storage/storage.router'
 
 
 import { appErrorHandler } from "./app.errorHandler";
@@ -16,6 +18,8 @@ import { podcastErrorHandler } from '../podcast/podcast.errorHandler'
 import { episodeErrorHandler } from '../episode/episode.errorHandler'
 import { transcriptErrorHandler } from '../transcript/transcript.errorHandler'
 import { tagErrorHandler } from '../tag/tag.errorHandler'
+import {testErrorHandler} from '../test/test.errorHandler'
+import bodyParser from "body-parser";
 /**
  * 创建应用
  */
@@ -34,8 +38,9 @@ app.use(cors({
  */
 app.use(express.json({ limit: '300mb' }))
 app.use(express.urlencoded({ extended: true }));
-
 app.use(
+    storageRouter,
+    specialTestRouter,
     appRouter,
     podcastRouter,
     episodeRouter,
@@ -44,6 +49,7 @@ app.use(
     tagRouter)
 
 app.use(
+    testErrorHandler,
     tagErrorHandler,
     podcastErrorHandler,
     episodeErrorHandler,

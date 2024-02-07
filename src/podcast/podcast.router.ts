@@ -16,4 +16,6 @@ router.patch('/podcast/updatePodcast', podcastController.updatePodcast)
 
 router.get('/podcast/arrangedesc', podcastController.arrangedesc)
 
+router.get('/podcast/searchPodcastUpdate', podcastController.searchPodcastUpdate)
+
 export default router;

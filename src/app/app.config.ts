@@ -80,3 +80,10 @@ export const {
 export const {
   DEEPGRAM_APIKEY
 } = process.env
+
+export const {
+  QINIU_ACCESSKEY,
+  QINIU_SECRETKEY,
+  QINIU_SCOPE,
+  QINIU_DOMAIN
+} = process.env

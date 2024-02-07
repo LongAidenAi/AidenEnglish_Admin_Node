@@ -11,7 +11,7 @@ export const getAllPocastsShortInfo = async (
     id,
     podcast_name,
     total_episodes_taddy,
-    image_spotify,
+    image_url,
     lastest_updatetime_taddy
   from podcast
  `
@@ -91,7 +91,7 @@ export const changeTranscriptSigns = async (
 
   try {
     await connection.promise().query(statement, [signs, podcast_id]);
-    console.log('success,修改文字稿是否存在的状态成功')
+    
   } catch (error) {
     console.error('修改数据库中文字稿是否存在的状态，失败：:', error.message);
     throw new Error(`修改数据库中文字稿是否存在的状态，失败：:${error.message}`);
@@ -133,10 +133,10 @@ export const replaceAudioUrl = async (
     for (const item of episodesInfoList) {
       const statement = `
         UPDATE episode
-        SET audioUrl = ?
+        SET audio_url = ?
         WHERE id = ?;
       `;
-      await connection.promise().query(statement, [item.audioUrl, item.id]);
+      await connection.promise().query(statement, [item.audio_url, item.id]);
     }
   } catch (error) {
     throw new Error('更新数据库中每期播客的音频地址失败');
@@ -152,7 +152,7 @@ export const getEpisodesAudioUrlInfo = async (
    const statement = `
     select 
     id,
-    audioUrl
+    audio_url
    from episode
    where podcast_id = ?;
    `
@@ -182,13 +182,14 @@ export const saveTranscript = async (transriptList: any[]) => {
       item.paragraphs,
       item.words,
   ]);
-
-  const [data] = await connection.promise().query(statement, [values]);
-  if (data) {
-    return data;
-  } else {
-    throw new Error('将episodes保存到数据库中失败');
-  }
+  
+    try {
+      const [data] = await connection.promise().query(statement, [values]);
+      console.log('将本地保存的json格式的文字稿上传至数据库,成功')
+      return data;   
+    } catch (error) {
+      throw new Error('将episodes保存到数据库中失败');
+    }
 };
 
 /***

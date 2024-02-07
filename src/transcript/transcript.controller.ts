@@ -31,8 +31,9 @@ export const saveTranscriptInLocal = async (
       const podcastDir = `${FilePodcastPath.localPathJSON}/${episodesInfo[0].podcast_id}.${podcastName}`
       await Promise.all(episodesInfoList.map(async (item: any, index: number) => {
         if (item.transcript_sign === 0) {
-
+          
           const episodeName = sanitizeFilename(item.name)
+
           const localFilePath = `${podcastDir}/${item.episodeNumber}.${episodeName}.json`
           
           try {
@@ -41,6 +42,7 @@ export const saveTranscriptInLocal = async (
 
             // 判断本地文件是否存在，如果不存在则写入
             if (!fs.existsSync(localFilePath)) {
+              
               const transcriptInfoJSON = await deepgramProccess(item.audio_url);
 
               fs.writeFileSync(localFilePath, transcriptInfoJSON);
@@ -140,9 +142,9 @@ export const fixAudioUrl = async (
 
   const regex = new RegExp(String(removeRedirectPath), 'g');
 
-  episodesInfoList.forEach((item: { audioUrl: string; }) => {
-    if (item.audioUrl) {
-      item.audioUrl = item.audioUrl.replace(regex, '');
+  episodesInfoList.forEach((item: { audio_url: string; }) => {
+    if (item.audio_url) {
+      item.audio_url = item.audio_url.replace(regex, '');
     }
   });
   try {

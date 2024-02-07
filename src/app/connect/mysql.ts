@@ -15,5 +15,6 @@ export const connection = mysql.createConnection({
     port: parseInt(MYSQL_PORT, 10),
     user: MYSQL_USER,
     password: MYSQL_PASSWORD,
-    database: MYSQL_DATABASE
+    database: MYSQL_DATABASE,
+    charset: 'utf8mb4_0900_ai_ci'
   });

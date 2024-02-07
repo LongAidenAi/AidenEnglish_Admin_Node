@@ -23,11 +23,11 @@ export const formatfileName = (item: any) => {
     }
 }
 
-export const sanitizeFilename = (filename: string)  => {
+export const sanitizeFilename = (filename: any)  => {
     // 正则表达式匹配所有不允许的字符以及结尾的空格或点号
     const invalidChars = /[<>:"/\\|?*\x00-\x1F]|[\s.]$/g;
     // 替换掉不允许的字符
-    return filename.replace(invalidChars, '_');
+    return filename.replace(invalidChars, '_').replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ''); 
   }
 
 export const arrangeEpisodesTranscriptData = (episodeId:any,baiduData: any) => {
@@ -132,6 +132,9 @@ export const arrangeTransToPDF = async (
     doc.font(FontPath.EnglishFontPath).fontSize(14).text(transText, {
       lineGap: 6,
     });
+
+    //概述标题
+    doc.font(FontPath.ChineseFontPath).fontSize(11.5).text('文字稿由 艾登英语 提供,可在b站,公众号,抖音等平台搜索:艾登英语,获取更多学习内容').moveDown(2);
 
     // 完成PDF文档的编辑
     doc.end();

@@ -3,7 +3,7 @@ export interface PodcastInfoModel {
     id_spotify: string
     id_taddy: string
     id_itunes: string
-    image_spotify: string
+    image_url: string
     image_taddy: string
     total_episodes_spotify: number
     total_episodes_taddy: number

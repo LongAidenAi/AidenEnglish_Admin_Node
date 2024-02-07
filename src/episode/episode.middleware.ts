@@ -27,7 +27,7 @@ export const arrangeSearchEpisodeInfo = async (
             item.name = item.name.replace(regex, ''); 
           }
         
-          if(!item.imageUrl) item.imageUrl = podcastInfo.image_spotify
+          if(!item.imageUrl) item.imageUrl = podcastInfo.image_url
          
           const updatetime = formatData(item.datePublished)
           const duration = formatDuration(item.duration)
@@ -42,7 +42,7 @@ export const arrangeSearchEpisodeInfo = async (
             }
           }
           
-  
+
           // const transDesc = await episodeHttps.transDescTool(filterDesc)
           console.log(index)
           return {
@@ -50,7 +50,7 @@ export const arrangeSearchEpisodeInfo = async (
             podcast_name: podcastInfo.podcast_name,
             podcast_id_spotify: podcastInfo.id_spotify,
             podcast_id_taddy: podcastInfo.id_taddy,
-            podcast_image_spotify: podcastInfo.image_spotify,
+            podcast_image_url: podcastInfo.image_url,
             podcast_lastest_updatetime: podcastInfo.lastest_updatetime_taddy,
             podcast_total_episodes: podcastInfo.total_episodes_taddy,
             name: item.name,
@@ -69,14 +69,58 @@ export const arrangeSearchEpisodeInfo = async (
   return arrangedData
 }
 
+/***
+ * 
+ */
+export const arrangeUpdateEpisodesInfo = (
+  updateInfo: any, updateNumbers: number,previewAudioList: any,taddyData: any
+) => {
+  let arr = []
+  let data = {}
+  for (let index = 0; index < updateNumbers; index++) {
+
+    let episodeNumber = taddyData.episodes[index].episodeNumber;
+    if(!episodeNumber) {
+      episodeNumber = updateInfo.total_episodes_database + index;
+    }
+
+    let image = taddyData.episodes[index].imageUrl
+    if(!image) image = updateInfo.image_url
+
+    const updatetime = formatData(taddyData.episodes[index].datePublished)
+    const duration = formatDuration(taddyData.episodes[0].duration)
+
+     data = {
+      name: taddyData.episodes[index].name,
+      id_taddy: taddyData.episodes[index].uuid,
+      image,
+      audio_url: taddyData.episodes[index].audioUrl,
+      audio_preview_url: previewAudioList[index].audio_preview_url,
+      update_time: updatetime,   
+      episodeNumber,
+      transcript_sign: 0,
+      duration: duration,
+      podcast_id: updateInfo.podcast_id,
+      isFreeSample: 0,
+     }
+
+     arr.push(data)
+  }
+
+  return arr
+}
 
 const formatData = (timestamp: any) => {
   // 将时间戳转换成日期
   const date = new Date(timestamp * 1000); 
-  //获取日期部分
-  const formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" +  date.getDate();
+  // 填充0函数，确保月份和日期是两位数
+  const pad = (num: number): string => (num < 10 ? `0${num}` : num.toString());
+
+  // 获取格式化的日期部分
+  const formattedDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   return formattedDate
 }
+
 const formatDuration = (duration: any) => {
   const minutes = Math.floor(duration / 60);
   const remainingSeconds = duration % 60;

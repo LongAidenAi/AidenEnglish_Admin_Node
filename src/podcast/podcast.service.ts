@@ -111,3 +111,26 @@ export const getPodcastById = async (
       return data[0] ? data[0] : null
 
 }
+
+/***
+ * 获取播客的最后更新时间，总集数等信息
+ */
+export const getPodcastUpdateInfo = async (
+
+) => {
+    const statement = `
+      SELECT 
+         id,
+         podcast_name,
+         image_spotify,
+      	id_spotify,
+         id_taddy,
+         total_episodes_taddy,
+         total_episodes_spotify
+      from podcast
+    `
+
+    const [data] =  await connection.promise().query(statement);
+
+    return data
+}

@@ -48,6 +48,10 @@ export const podcastErrorHandler = (
         statusCode = 501;
         message = `服务端错误，openai调用失败`
         break;  
+      case 'SEARCH_PODCAST_UPDATE_FAILED':
+        statusCode = 501;
+        message = `服务端错误，搜索播客更新信息失败`
+        break;  
     }
     if(!statusCode) return next(error)
     response.status(statusCode).send({ message })

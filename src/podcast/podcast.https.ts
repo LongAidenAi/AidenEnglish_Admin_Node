@@ -22,6 +22,37 @@ export const searchSpotifyPodcast = async (
 }
 
 /***
+ * 得到spotify的episodes信息，用于更新播客
+ */
+export const getSpotifyEpisodes = async (
+  options: podcastOptions
+) => {
+    const {spotifyToken,id_spotify} = options
+    try {
+    const {data} = await apiHTTPSpotify(spotifyToken).get(`/v1/shows/${id_spotify}/episodes`)
+    
+    return data
+
+    } catch (error) {
+        throw new Error('从spotify接口搜索播客失败');
+    }    
+}
+
+export const test = async (
+  spotifyToken: string
+  ) => {
+      try {
+      const {data} = await apiHTTPSpotify(spotifyToken).get(`/v1/shows?ids=7xlVx5F0lSZYqziIssAnYh,4aFKwkboogsBGC6DkQ0H05`)
+     
+      return data
+
+      } catch (error) {
+          throw new Error('从spotify接口搜索播客失败');
+      }
+}
+
+
+/***
 * 搜索taddy的播客信息
 */
 export const searchTaddyPodcast = async (
@@ -58,6 +89,73 @@ export const searchTaddyPodcast = async (
         }
   }
 
+/**
+ * 搜索taddy的播客信息，用于更新
+ */
+export const searchTaddyPodcastInfo = async (
+  id_taddy: string
+) => {
+  const query = `
+  {
+    getPodcastSeries(uuid:"${id_taddy}"){
+        name
+        authorName
+        imageUrl
+        uuid
+        itunesId
+        totalEpisodesCount
+        description
+        episodes(sortOrder:LATEST, page:1, limitPerPage:1){
+            uuid
+            name
+            datePublished
+          }
+      }
+  }
+`
+  try {
+  const {data} = await apiHttpTaddy.post('/',{query})
+
+  return data.data.getPodcastSeries.totalEpisodesCount
+
+  } catch (error) {
+      throw new Error('从taddy接口搜索播客,获取播客总集数失败');
+  }
+}
+
+
+/***
+ * 得到taddy的episodes信息，用于更新
+ */
+export const getTaddyUpdateEpisodes = async (
+  id_taddy: string,
+  limit: number
+) => {
+  const query = `
+  {
+    getPodcastSeries(uuid:"${id_taddy}"){
+      uuid
+      name
+      episodes(sortOrder:LATEST, page:1, limitPerPage:${limit}){
+        uuid
+        name
+        imageUrl
+        audioUrl
+        duration
+        episodeNumber
+        datePublished
+      }
+    }
+  }
+`
+  try {
+  const {data} = await apiHttpTaddy.post('/',{query})
+  return data.data.getPodcastSeries
+
+  } catch (error) {
+      throw new Error('得到taddy的episodes信息,用于更新,失败');
+  }
+}
 
 /***
 * 搜索taddy的播客信息

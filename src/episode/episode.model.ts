@@ -3,7 +3,6 @@ export interface EpisodeInfoModel {
     podcast_name: string
     podcast_id_spotify: string
     podcast_id_taddy: string
-    podcast_image_spotify: string
     name: string
     id_taddy: string
     image: string

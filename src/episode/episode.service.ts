@@ -4,18 +4,18 @@ import { connection } from "../app/connect/mysql";
   * 保存episodes
   */
  export const saveEpisodes = async (
-    episodeList: any, isFreeSmaple: number
+    episodeList: any, isFreeSample: number
   ) => {
     const statement = `
     INSERT INTO episode 
-    (podcast_image_spotify,name,id_taddy,image,audio_url,audio_preview_url,update_time,episodeNumber,transcript_sign,duration,podcast_id,isFreeSample) 
+    (name,id_taddy,image,audio_url,audio_preview_url,update_time,episodeNumber,transcript_sign,duration,podcast_id,isFreeSample) 
     VALUES ?;
   `;
   const values = episodeList.map((episode: any, index: number) => {
-   const isFreeSample = index < 3 ? 1 : 0; 
+
+    if(!isFreeSample) isFreeSample = index < 3 ? 1 : 0; 
  
    return [
-     episode.podcast_image_spotify,
      episode.name,
      episode.id_taddy,
      episode.image,
@@ -26,7 +26,7 @@ import { connection } from "../app/connect/mysql";
      episode.transcript_sign,
      episode.duration,
      episode.podcast_id,
-     isFreeSample 
+     episode.isFreeSample 
    ];
  });
     

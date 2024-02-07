@@ -49,8 +49,12 @@ export const arrangeUpdatePodcastInfo = (
 const formatData = (timestamp: any) => {
   // 将时间戳转换成日期
   const date = new Date(timestamp * 1000); 
-  //获取日期部分
-  const formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" +  date.getDate();
+  // 填充0函数，确保月份和日期是两位数
+  const pad = (num: number): string => (num < 10 ? `0${num}` : num.toString());
+
+  // 获取格式化的日期部分
+  const formattedDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  
   return formattedDate
 }
 
