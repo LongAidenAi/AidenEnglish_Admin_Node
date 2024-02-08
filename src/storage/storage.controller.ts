@@ -15,7 +15,6 @@ export const savePodcastImageQiniu = async (
 ) => {
         const filePath = `${Dir.podcastDir}/${request.file.originalname}`
     try {
-        console.log(filePath)
         const data = await storageHttps.saveImageQiniu(filePath, request.file.buffer)
         
         response.status(201).send(data.key)

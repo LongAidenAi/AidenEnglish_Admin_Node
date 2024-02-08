@@ -78,11 +78,15 @@ export const saveTranscriptInLocal = async (
  */
 const deepgramProccess = async (audioUrl: string) => {
   const DeepGramData = await transcriptHttps.apiDeepGramTranscribe(audioUrl)
+  await delay(100); // 添加100毫秒的延迟
   const transcriptInfo = await arrangeTranscriptInfo(DeepGramData)
   const transcriptInfoJSON = JSON.stringify(transcriptInfo);
   return transcriptInfoJSON
 }
-
+// 延迟函数
+const delay = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
  * 将文字稿保存到数据库
@@ -284,6 +288,7 @@ const {podcast_id} = request.query
       const textDir = path.join(episodeRangeDir, '文字稿');
       const audioDir = path.join(episodeRangeDir, '音频');
     
+
       if (!fs.existsSync(textDir)) {
         fs.mkdirSync(textDir, { recursive: true });
       }
@@ -309,11 +314,12 @@ const {podcast_id} = request.query
       completedCount++; 
     }
 
-    console.log(`\n操作完成,总共完成${completedCount}项`)
+    console.log(`\n操作完成,总共${completedCount}项`)
 
-    const data = `\n操作完成,总共完成${completedCount}项`
+    const data = `\n操作完成,总共${completedCount}项`
     response.status(201).send(data)
   } catch (error) {
+    console.log(error)
     next({
       message: 'PACK_TO_LOCAL_FAILED',
       originalError: error.message  

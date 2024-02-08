@@ -85,7 +85,7 @@ export const searchPreviewAudios = async (
             offset = (pageIndex - 1) * 50
             const spotifyMetaData = await episodeHttps.searchPreviewAudios(String(id_spotify),spotifyToken,offset)
             totalEpisodes.push(...spotifyMetaData)
-            console.log(totalEpisodes.length, spotifyMetaData.length,pageIndex)
+            
             if(spotifyMetaData.length < 50) {
                 break 
             }
