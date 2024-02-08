@@ -81,17 +81,18 @@ export const getEpisodesInfo = async (
 
 export const changeTranscriptSigns = async (
   podcast_id: number,
+  episode_id: number,
   signs: number
 ) => {
   const statement = `
     UPDATE episode
     SET transcript_sign = ?
-    WHERE podcast_id = ?;
+    WHERE podcast_id = ? and id = ?;
   `
 
   try {
-    await connection.promise().query(statement, [signs, podcast_id]);
-    
+    await connection.promise().query(statement, [signs, podcast_id,episode_id]);
+    console.log(`播客${podcast_id}, 第${episode_id}集，文字稿存入数据库成功`)
   } catch (error) {
     console.error('修改数据库中文字稿是否存在的状态，失败：:', error.message);
     throw new Error(`修改数据库中文字稿是否存在的状态，失败：:${error.message}`);
@@ -165,14 +166,14 @@ export const getEpisodesAudioUrlInfo = async (
     }   
 }
 
-export const saveTranscript = async (transriptList: any[]) => {
+export const saveTranscript = async (transcriptInfo: any) => {
   const statement = `
     INSERT INTO transcript 
     (podcast_id, episode_id, episodeNumber, transcript, metaSummary, transSummary, paragraphs, words) 
     VALUES ?;
   `;
 
-  const values = transriptList.map(item => [
+  const values = transcriptInfo.map(item => [
       item.podcast_id,
       item.episode_id,
       item.episodeNumber,
@@ -185,7 +186,7 @@ export const saveTranscript = async (transriptList: any[]) => {
   
     try {
       const [data] = await connection.promise().query(statement, [values]);
-      console.log('将本地保存的json格式的文字稿上传至数据库,成功')
+
       return data;   
     } catch (error) {
       throw new Error('将episodes保存到数据库中失败');

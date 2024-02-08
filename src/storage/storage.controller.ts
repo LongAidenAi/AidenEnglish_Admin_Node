@@ -161,7 +161,7 @@ export const saveEpisodepreAudioQiniu = async (
     try {
 
         const data = await storageHttps.saveImageQiniu(filePath, request.file.buffer)
-        
+        console.log(`${request.file.originalname} 预览音频文件，保存至七牛云成功`)
         response.status(201).send(data.key)
 
     } catch (error) {
@@ -180,7 +180,7 @@ export const saveEpisodeAudioQiniu = async (
     try {
 
         const data = await storageHttps.saveImageQiniu(filePath, request.file.buffer)
-        
+        console.log(`${request.file.originalname} 音频文件，保存至七牛云成功`)
         response.status(201).send(data.key)
 
     } catch (error) {

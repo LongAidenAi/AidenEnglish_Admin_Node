@@ -112,7 +112,7 @@ export const updateEpisodePreAudio = async (
      where id = ? and podcast_id = ?
     `
     await connection.promise().query(statement, [preAudio,id,podcastId ]);
-    console.log(`修改pre_audio成功,播客id: ${podcastId}, episode的id: ${id}`)
+    console.log(`修改数据库pre_audio成功,播客id: ${podcastId}, episode的id: ${id}`)
 }
 
 
@@ -128,5 +128,5 @@ export const updateEpisodeAudio = async (
      where id = ? and podcast_id = ?
     `
     await connection.promise().query(statement, [audio,id,podcastId ]);
-    console.log(`修改audio成功,播客id: ${podcastId}, episode的id: ${id}`)
+    console.log(`修改数据库audio成功,播客id: ${podcastId}, episode的id: ${id}`)
 }

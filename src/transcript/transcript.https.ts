@@ -45,6 +45,7 @@ export const apiDeepGramTranscribe = async (
               url: audioUrl,
             },
             {
+              smart_format: true,
               model: "nova-2",
               summarize: 'v2'
             }

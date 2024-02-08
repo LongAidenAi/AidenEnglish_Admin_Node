@@ -16,6 +16,8 @@ import { connection } from "../app/connect/mysql";
 
     if(index < isFreeSample) {
       episode.isFreeSample = 1
+    } else {
+      episode.isFreeSample = 0
     }
  
    return [

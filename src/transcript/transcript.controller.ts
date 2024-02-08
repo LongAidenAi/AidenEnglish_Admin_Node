@@ -94,31 +94,36 @@ export const uploadTranscript = async (
 ) => {
   try {
     const {podcast_id} = request.query
+  
     const episodesInfo = await transcriptService.getEpisodesInfo(Number(podcast_id),null)
     const episodesInfoList = convertToArray(episodesInfo)
 
     const podcastName = sanitizeFilename(episodesInfo[0].podcast_name)
     const podcastDir = `${FilePodcastPath.localPathJSON}/${episodesInfo[0].podcast_id}.${podcastName}`
 
-    const resultArray = episodesInfoList.map((item: any, index: number) => {
-      if (item.transcript_sign === 0) {
+    const promises = await episodesInfoList.map(async (item: any, index: number) => {
 
-        const episodeName = sanitizeFilename(item.name)
-        const localFilePath = `${podcastDir}/${item.episodeNumber}.${episodeName}.json`
-        
-        const transcriptFile = fs.readFileSync(localFilePath, 'utf8');
-        const transcriptData = JSON.parse(transcriptFile);
+        if (item.transcript_sign === 0) {
+          const episodeName = sanitizeFilename(item.name)
+          const localFilePath = `${podcastDir}/${item.episodeNumber}.${episodeName}.json`
+          
+          const transcriptFile = fs.readFileSync(localFilePath, 'utf8');
+          const transcriptData = JSON.parse(transcriptFile);
+  
+          const transcriptInfo = arrangeTranscriptData(transcriptData,item)
+  
+          await transcriptService.saveTranscript([transcriptInfo])
+          await transcriptService.changeTranscriptSigns(Number(podcast_id),Number(transcriptInfo.episode_id),1)
+          return transcriptInfo 
+        }
 
-        const transcriptInfo = arrangeTranscriptData(transcriptData,item)
-        return transcriptInfo 
-      }
 
     });
-    await transcriptService.saveTranscript(resultArray)
-    await transcriptService.changeTranscriptSigns(Number(podcast_id),1)
+    await Promise.all(promises);
     response.status(201).send()
     
   } catch (error) {
+    console.log(error)
     next({
       message: 'SAVE_TRANSCRIPT_TO_DATABASE_FAILED',
       originalError: error.message  

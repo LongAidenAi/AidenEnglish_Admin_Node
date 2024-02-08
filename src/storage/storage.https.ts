@@ -20,7 +20,6 @@ export const saveImageQiniu = async (
       const response = await formUploader.put(uploadToken, filePath, fileData,putExtra, function(respErr, respBody, respInfo) {
         if (!respErr) {
           // 上传成功,处理返回值
-          console.log(respBody);
 
           return respBody
         } else {
