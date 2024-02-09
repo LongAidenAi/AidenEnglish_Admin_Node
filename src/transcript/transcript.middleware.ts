@@ -190,8 +190,10 @@ export const downloadAudio = async (
         });
     
         console.log(`${item.episodeNumber}.${item.name}.mp3 下载成功！`);
+        return 1
       } catch (error) {
-        console.error('下载失败：', error);
+        console.error(`下载失败, ${item.episodeNumber}.${item.name}.mp3`);
+        return 0
       }
 }
 

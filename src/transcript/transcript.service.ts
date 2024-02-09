@@ -82,7 +82,8 @@ export const getEpisodesInfo = async (
 export const changeTranscriptSigns = async (
   podcast_id: number,
   episode_id: number,
-  signs: number
+  signs: number,
+  episodeNumber: number
 ) => {
   const statement = `
     UPDATE episode
@@ -92,7 +93,7 @@ export const changeTranscriptSigns = async (
 
   try {
     await connection.promise().query(statement, [signs, podcast_id,episode_id]);
-    console.log(`播客${podcast_id}, 第${episode_id}集，文字稿存入数据库成功`)
+    console.log(`播客${podcast_id}, 第${episodeNumber}集，文字稿存入数据库成功`)
   } catch (error) {
     console.error('修改数据库中文字稿是否存在的状态，失败：:', error.message);
     throw new Error(`修改数据库中文字稿是否存在的状态，失败：:${error.message}`);

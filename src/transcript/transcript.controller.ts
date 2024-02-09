@@ -42,7 +42,12 @@ export const saveTranscriptInLocal = async (
 
             // 判断本地文件是否存在，如果不存在则写入
             if (!fs.existsSync(localFilePath)) {
-              
+            await new Promise<void>(resolve => {
+              let i = index
+              setTimeout(() => {
+                resolve(); 
+              }, i * 300);
+            });
               const transcriptInfoJSON = await deepgramProccess(item.audio_url);
 
               fs.writeFileSync(localFilePath, transcriptInfoJSON);
@@ -77,16 +82,18 @@ export const saveTranscriptInLocal = async (
  * 调用deepgram进行音频转文字
  */
 const deepgramProccess = async (audioUrl: string) => {
+
   const DeepGramData = await transcriptHttps.apiDeepGramTranscribe(audioUrl)
-  await delay(100); // 添加100毫秒的延迟
+  
   const transcriptInfo = await arrangeTranscriptInfo(DeepGramData)
   const transcriptInfoJSON = JSON.stringify(transcriptInfo);
   return transcriptInfoJSON
 }
 // 延迟函数
-const delay = (ms: number) => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+// const delay = (ms: number) => {
+//   console.log(ms)
+//   return new Promise(resolve => setTimeout(resolve, ms));
+// }
 
 /**
  * 将文字稿保存到数据库
@@ -117,7 +124,8 @@ export const uploadTranscript = async (
           const transcriptInfo = arrangeTranscriptData(transcriptData,item)
   
           await transcriptService.saveTranscript([transcriptInfo])
-          await transcriptService.changeTranscriptSigns(Number(podcast_id),Number(transcriptInfo.episode_id),1)
+          await transcriptService.changeTranscriptSigns(
+            Number(podcast_id),Number(transcriptInfo.episode_id),1,Number(transcriptInfo.episodeNumber))
           return transcriptInfo 
         }
 
@@ -276,6 +284,7 @@ const {podcast_id} = request.query
       return `${startRange}-${endRange}`;
     };
 
+    let errorHandler: any[] = [];
     // 初始化操作完成计数器
     let completedCount = 0; 
     // 使用 for...of 循环来确保异步行为的顺序
@@ -288,38 +297,46 @@ const {podcast_id} = request.query
       const textDir = path.join(episodeRangeDir, '文字稿');
       const audioDir = path.join(episodeRangeDir, '音频');
     
-
-      if (!fs.existsSync(textDir)) {
-        fs.mkdirSync(textDir, { recursive: true });
-      }
-      if (!fs.existsSync(audioDir)) {
-        fs.mkdirSync(audioDir, { recursive: true });
-      }
-    
-      // 文字稿和音频文件的路径
-      const episodePathPDF = path.join(textDir, `${item.episodeNumber}.${item.name}.pdf`);
-      const episodePathMP3 = path.join(audioDir, `${item.episodeNumber}.${item.name}.mp3`);
-    
-      // 处理文字稿文件
-      if (!fs.existsSync(episodePathPDF)) {
-        arrangeTransToPDF(item, episodePathPDF); // 假设这是一个同步函数
-      }
+      try {
+        if (!fs.existsSync(textDir)) {
+          fs.mkdirSync(textDir, { recursive: true });
+        }
+        if (!fs.existsSync(audioDir)) {
+          fs.mkdirSync(audioDir, { recursive: true });
+        }
       
-      // 处理音频文件
-      if (!fs.existsSync(episodePathMP3)) {
-        // 由于这是一个异步函数，我们在这里等待它
-        await downloadAudio(item, episodePathMP3);
+        // 文字稿和音频文件的路径
+        const episodePathPDF = path.join(textDir, `${item.episodeNumber}.${item.name}.pdf`);
+        const episodePathMP3 = path.join(audioDir, `${item.episodeNumber}.${item.name}.mp3`);
+      
+        // 处理文字稿文件
+        if (!fs.existsSync(episodePathPDF)) {
+          arrangeTransToPDF(item, episodePathPDF); // 假设这是一个同步函数
+        }
+        
+        // 处理音频文件
+        if (!fs.existsSync(episodePathMP3)) {
+          // 由于这是一个异步函数，我们在这里等待它
+          const status = await downloadAudio(item, episodePathMP3);
+          if(!status) {
+            errorHandler.push(item.id)
+          }
+        }
+  
+        completedCount++; 
+      } catch (error) {
+        console.error(`episode_id为: ${item.id} ,从数据库存储pdf或mp3失败：${error.message}`);
       }
-
-      completedCount++; 
+     
     }
-
-    console.log(`\n操作完成,总共${completedCount}项`)
-
-    const data = `\n操作完成,总共${completedCount}项`
+    const data = {
+      message: `数据库导出共${episodesInfoList.length}项,实际写入: ${completedCount}项`,
+      errorHandler
+    }
+    completedCount = 0
     response.status(201).send(data)
   } catch (error) {
-    console.log(error)
+
     next({
       message: 'PACK_TO_LOCAL_FAILED',
       originalError: error.message  
