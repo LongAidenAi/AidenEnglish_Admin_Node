@@ -11,6 +11,7 @@ import testRouter from '../test/test.router'
 import tagRouter from '../tag/tag.router'
 import specialTestRouter from '../specialTest/specialTest.router'
 import storageRouter from '../storage/storage.router'
+import fixRouter from '../fix/fix.router'
 
 
 import { appErrorHandler } from "./app.errorHandler";
@@ -46,7 +47,8 @@ app.use(
     episodeRouter,
     transcriptRouter,
     testRouter,
-    tagRouter)
+    tagRouter,
+    fixRouter)
 
 app.use(
     testErrorHandler,

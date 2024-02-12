@@ -93,7 +93,7 @@ export const changeTranscriptSigns = async (
 
   try {
     await connection.promise().query(statement, [signs, podcast_id,episode_id]);
-    console.log(`播客${podcast_id}, 第${episodeNumber}集，文字稿存入数据库成功`)
+    console.log(`播客${podcast_id}, 第${episodeNumber}集, 修改episode的transcript_sign状态为1,成功`)
   } catch (error) {
     console.error('修改数据库中文字稿是否存在的状态，失败：:', error.message);
     throw new Error(`修改数据库中文字稿是否存在的状态，失败：:${error.message}`);

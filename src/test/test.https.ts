@@ -12,9 +12,9 @@ export const deepgramAPI = async (
               url: episodeAudioUrl,
             },
             {
-              smart_format: true,
+              language: "en",
               model: "nova-2",
-              summarize: 'v2'
+              // summarize: 'v2'
             }
           );
         if (error) {

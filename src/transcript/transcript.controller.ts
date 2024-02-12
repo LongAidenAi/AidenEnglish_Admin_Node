@@ -84,7 +84,7 @@ export const saveTranscriptInLocal = async (
 const deepgramProccess = async (audioUrl: string) => {
 
   const DeepGramData = await transcriptHttps.apiDeepGramTranscribe(audioUrl)
-  
+  // const DeppGramSummary = await transcriptHttps.apiDeepGramSummary(audioUrl)
   const transcriptInfo = await arrangeTranscriptInfo(DeepGramData)
   const transcriptInfoJSON = JSON.stringify(transcriptInfo);
   return transcriptInfoJSON
@@ -124,6 +124,7 @@ export const uploadTranscript = async (
           const transcriptInfo = arrangeTranscriptData(transcriptData,item)
   
           await transcriptService.saveTranscript([transcriptInfo])
+          console.log(`播客${podcast_id}, 第${item.episodeNumber}集，文字稿存入数据库成功`)
           await transcriptService.changeTranscriptSigns(
             Number(podcast_id),Number(transcriptInfo.episode_id),1,Number(transcriptInfo.episodeNumber))
           return transcriptInfo 

@@ -159,20 +159,19 @@ export const arrangedesc = async (
     next: NextFunction
 ) => {
     const {description,switchHand} = request.query
+
     try {
         if(switchHand == 'true') {
-            const dataReject = filterDescTool(String(description))
+            // const dataReject = filterDescTool(String(description))
 
              //百度api
-            const dataTrans = await episodeHttps.transDescTool(String(dataReject))
+            const dataTrans = await episodeHttps.transDescTool(String(description))
 
-            response.status(201).send({dataReject,dataTrans})
+            response.status(201).send({dataTrans})
         } else {
-            //剔除引流链接
-            const dataReject = await podcastHttps.rejectDescLink(String(description))
-
-            //翻译成中文 openai api
-            // const dataTrans = await podcastHttps.transDesc(String(dataReject))
+            // //剔除引流链接
+            // const dataReject = await podcastHttps.rejectDescLink(String(description))
+            const dataReject = filterDescTool(String(description))
 
             //百度api
             const dataTrans = await episodeHttps.transDescTool(String(dataReject))

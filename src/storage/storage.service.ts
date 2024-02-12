@@ -3,47 +3,52 @@ import { connection } from "../app/connect/mysql";
 
 
 export const getPodcastImageUrl = async (
-    id_spotify: string
+    podcastId: number
 ) => {
     const statement = `
      select 
-       image_url
+       image_url,
+       id
     from podcast
-    where id_spotify = ?
+    where id = ?
     `
 
-    const [data] = await connection.promise().query(statement, id_spotify);
-
-    return data[0].image_url
+    const [data] = await connection.promise().query(statement, podcastId);
+    return data[0]
 }
 
 
 export const usePodcastImageReplaceEpi = async (
+    podcast_id: number,
     image_url: string
 ) => {
     const statement = `
     UPDATE 
       episode 
-    SET image = ?;
+    SET image = ?
+    where podcast_id = ?
+
     `
 
-   await connection.promise().query(statement, image_url);
+   await connection.promise().query(statement, [image_url,podcast_id]);
 
 }
 
 
 export const getEpisodeImageList = async (
-    id_spotify: string
+    podcastId: number
 ) => {
     const statement = `
     select 
       podcast_id,
       image,
-      id
+      id,
+      episodeNumber
    from episode
+   where podcast_id = ?
    `
 
-   const [data] = await connection.promise().query(statement, id_spotify);
+   const [data] = await connection.promise().query(statement, podcastId);
 
    return data
 }
@@ -59,9 +64,9 @@ export const updateEpisodeImage = async (
     SET image = ?
     where id = ?
    `
-
+    
    await connection.promise().query(statement, [image,id]);
-   console.log(`已修改id为:${id}, 成功`)
+   console.log(`已修改id为:${id}的图片, 成功`)
 }
 
 
@@ -72,7 +77,8 @@ export const getEpisodePreAudioList = async (
      select 
         podcast_id,
         id,
-        audio_preview_url
+        audio_preview_url,
+        episodeNumber
      from 
         episode
     where podcast_id = ?
@@ -89,7 +95,8 @@ export const getEpisodeAudioList = async (
      select 
         podcast_id,
         id,
-        audio_url
+        audio_url,
+        episodeNumber
      from 
         episode
     where podcast_id = ?

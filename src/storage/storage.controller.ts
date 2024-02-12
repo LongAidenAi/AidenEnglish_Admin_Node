@@ -4,9 +4,9 @@ import * as storageHttps from './storage.https'
 import * as storageService from './storage.service'
 enum Dir {
     podcastDir = 'podcast/image',
-    episodeImageDir = 'episode/image',
-    episodePreAudioDir = 'episode/pre_audio',
-    episodeAudioDir = 'episode/audio'
+    episodeImageDir = 'image',
+    episodePreAudioDir = 'pre_audio',
+    episodeAudioDir = 'audio'
 }
 export const savePodcastImageQiniu = async (
     request: Request,
@@ -14,6 +14,7 @@ export const savePodcastImageQiniu = async (
     next: NextFunction
 ) => {
         const filePath = `${Dir.podcastDir}/${request.file.originalname}`
+        console.log(filePath)
     try {
         const data = await storageHttps.saveImageQiniu(filePath, request.file.buffer)
         
@@ -51,11 +52,12 @@ export const usePodcastImageReplaceEpi = async (
     response: Response,
     next: NextFunction
 ) => {
-    const {id_spotify} = request.query
+    const {podcastId} = request.query
     try {
-        const podcastImageUrl = await storageService.getPodcastImageUrl(String(id_spotify))
+
+        const podcastInfo = await storageService.getPodcastImageUrl(Number(podcastId))
         
-        await storageService.usePodcastImageReplaceEpi(String(podcastImageUrl))
+        await storageService.usePodcastImageReplaceEpi(podcastInfo.id,String(podcastInfo.image_url))
 
         response.status(201).send()
     } catch (error) {
@@ -69,9 +71,9 @@ export const getEpisodeImageList = async (
     response: Response,
     next: NextFunction
 ) => {
-    const {id_spotify} = request.query
+    const {podcastId} = request.query
     try {
-        const episodeImageList = await storageService.getEpisodeImageList(String(id_spotify))
+        const episodeImageList = await storageService.getEpisodeImageList(Number(podcastId))
         
         response.status(201).send(episodeImageList)
     } catch (error) {
@@ -85,11 +87,15 @@ export const saveEpisodeImageQiniu = async (
     response: Response,
     next: NextFunction
 ) => {
-    const filePath = `${Dir.episodeImageDir}/${request.file.originalname}`
+    const filename = request.file.originalname;
+    const filenameParts = filename.split('.');
+    const podcastId = filenameParts[0];
+    const remainingFilename = filenameParts.slice(1).join('.'); // 去除第一部分后重新组合剩余部分的文件名
+    const finalFilePath = `episode/${podcastId}/${Dir.episodeImageDir}/${remainingFilename}`;
     try {
 
-        const data = await storageHttps.saveImageQiniu(filePath, request.file.buffer)
-        
+        const data = await storageHttps.saveImageQiniu(finalFilePath, request.file.buffer)
+        console.log(`播客id为:${podcastId},episode的id为: ${remainingFilename}, episode图片，保存至七牛云成功`)
         response.status(201).send(data.key)
 
     } catch (error) {
@@ -156,11 +162,15 @@ export const saveEpisodepreAudioQiniu = async (
     response: Response,
     next: NextFunction
 ) => {
-    const filePath = `${Dir.episodePreAudioDir}/${request.file.originalname}`
+    const filename = request.file.originalname;
+    const filenameParts = filename.split('.');
+    const podcastId = filenameParts[0];
+    const remainingFilename = filenameParts.slice(1).join('.'); // 去除第一部分后重新组合剩余部分的文件名
+    const finalFilePath = `episode/${podcastId}/${Dir.episodePreAudioDir}/${remainingFilename}`;
     try {
 
-        const data = await storageHttps.saveImageQiniu(filePath, request.file.buffer)
-        console.log(`${request.file.originalname} 预览音频文件，保存至七牛云成功`)
+        const data = await storageHttps.saveImageQiniu(finalFilePath, request.file.buffer)
+        console.log(`播客id为:${podcastId},episode的id为: ${remainingFilename}, 预览音频文件，保存至七牛云成功`)
         response.status(201).send(data.key)
 
     } catch (error) {
@@ -175,11 +185,14 @@ export const saveEpisodeAudioQiniu = async (
     response: Response,
     next: NextFunction
 ) => {
-    const filePath = `${Dir.episodeAudioDir}/${request.file.originalname}`
+    const filename = request.file.originalname;
+    const filenameParts = filename.split('.');
+    const podcastId = filenameParts[0];
+    const remainingFilename = filenameParts.slice(1).join('.'); // 去除第一部分后重新组合剩余部分的文件名
+    const finalFilePath = `episode/${podcastId}/${Dir.episodeAudioDir}/${remainingFilename}`;
     try {
-
-        const data = await storageHttps.saveImageQiniu(filePath, request.file.buffer)
-        console.log(`${request.file.originalname} 音频文件，保存至七牛云成功`)
+        const data = await storageHttps.saveImageQiniu(finalFilePath, request.file.buffer)
+        console.log(`播客id为:${podcastId},episode的id为: ${remainingFilename}, 音频文件，保存至七牛云成功`)
         response.status(201).send(data.key)
 
     } catch (error) {
@@ -221,9 +234,6 @@ export const updateEpisodePreAudio = async (
     }
 }
 
-/***
- * 
- */
 export const updateEpisodeAudio = async (
     request: Request,
     response: Response,
