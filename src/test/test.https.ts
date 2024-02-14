@@ -12,9 +12,10 @@ export const deepgramAPI = async (
               url: episodeAudioUrl,
             },
             {
-              language: "en",
               model: "nova-2",
-              // summarize: 'v2'
+              smart_format: true,
+              language: "en",
+              summarize: 'v2'
             }
           );
         if (error) {
@@ -40,6 +41,7 @@ export const previewAudio = async (
 ) => {
     try {
       const response = await apiHTTPSpotify(token).get(`/v1/shows/${id_spotify}/episodes?limit=50&offset=${offset}`)
+
       return response.data.items
     } catch (error) {
       console.log('testHttps.previewAudio:' + error)

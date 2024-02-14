@@ -46,7 +46,7 @@ export const saveTranscriptInLocal = async (
               let i = index
               setTimeout(() => {
                 resolve(); 
-              }, i * 300);
+              }, i * 550);
             });
               const transcriptInfoJSON = await deepgramProccess(item.audio_url);
 

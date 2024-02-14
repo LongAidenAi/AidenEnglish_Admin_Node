@@ -82,17 +82,18 @@ export const searchPreviewAudios = async (
         let offset = 0
         
         while (true) {
-            offset = (pageIndex - 1) * 50
+            offset = (pageIndex - 1) * 45
             const spotifyMetaData = await episodeHttps.searchPreviewAudios(String(id_spotify),spotifyToken,offset)
             totalEpisodes.push(...spotifyMetaData)
-            
             if(spotifyMetaData.length < 50) {
                 break 
             }
             pageIndex++ 
         }
-        totalEpisodes.reverse();
-        const data = totalEpisodes.map((item) => {
+
+        const reversed = [...totalEpisodes].reverse();
+
+        const data = reversed.map((item) => {
           return {
             audio_preview_url: item.audio_preview_url,
             update_item: item.release_date

@@ -36,8 +36,8 @@ export const getImageQiniu = async (
     
     try {
         const imageUrlQiniu = await storageHttps.getRecourseQiniu(String(resKey))
-
-        response.status(201).send(imageUrlQiniu)
+        console.log(imageUrlQiniu)
+        response.status(201).send(String(imageUrlQiniu))
     } catch (error) {
         console.log('storageController.getPodcastImageQiniu报错')
         console.log(error)
