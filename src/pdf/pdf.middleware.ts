@@ -107,3 +107,35 @@ export const arrangeTransToPDF = async (
     });
 
 }
+
+    // doc.font(FontPath.ChineseFontPath).fontSize(16).text('分级英语播客一站式学习平台', { align: 'center' }).moveDown(2);
+
+    //     //官网介绍
+    // doc.font(FontPath.ChineseFontPath).fontSize(13).text(
+    //     '根据英语分级读物--可理解性输入的理念，艾登英语团队设计出了国内首个分级英语听力在线平台。',
+    //     {
+    //     lineGap: 6,
+    //     characterSpacing: 2
+    //     }).moveDown(1);
+
+    // //官网介绍
+    // doc.font(FontPath.ChineseFontPath).fontSize(13).text(
+    //     '平台提供了上万集播客音频以及配套文字稿，并通过七项指标，包括:等级、风格、语速、主题、时长、发音、内容深度等，进行了35种分类。针对英语学习者，对播客的难度和等级进行评级。访问下方链接，即可体验：',
+    //     {
+    //     lineGap: 6,
+    //     characterSpacing: 2
+    //     }).moveDown(1);
+
+    // const url = 'https://www.aidenenglish.cn';
+    // const linkText = '分级英语播客一站式学习平台(www.aidenenglish.cn)';
+    // // 设置链接文本颜色
+    // const linkColor = '#329e8f';
+
+    // // 绘制文本，并在相同位置绘制链接
+    // doc.fillColor(linkColor)
+    // .fontSize(14.5)
+    // .text(linkText, {
+    //   link: url,
+    //   underline: true,
+    //   align: 'center'
+    // }).moveDown(2);
