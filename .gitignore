@@ -23,6 +23,6 @@ npm-debug.log*
 config/*.key
 /uploads
 
-# github
+# github  
 id_rsa_github
 id_rsa_github.pub
