@@ -134,7 +134,18 @@ export const arrangeTransToPDF = async (
     });
 
     //概述标题
-    doc.font(FontPath.ChineseFontPath).fontSize(11.5).text('文字稿由 艾登英语 提供,可在b站,公众号,抖音等平台搜索:艾登英语,获取更多学习内容').moveDown(2);
+    const noteColor = '#A8ABB2';
+    //概述标题
+    doc
+    .font(FontPath.ChineseFontPath)
+    .fontSize(11.5)
+    .fillColor(noteColor) // 设置文本颜色
+    .text(
+        '注：文字稿由 艾登英语 提供，可在b站，公众号，抖音等平台搜索:艾登英语，获取更多学习内容。',
+        {
+        lineGap: 6,
+        characterSpacing: 2
+        }).moveDown(2);
 
     // 完成PDF文档的编辑
     doc.end();

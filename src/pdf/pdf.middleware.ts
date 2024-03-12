@@ -108,6 +108,70 @@ export const arrangeTransToPDF = async (
 
 }
 
+
+/***
+ * 整理文字稿列表信息并转为pdf,没有官网引流链接
+ */
+export const arrangeTransToPDF_v2 = async (
+  transcriptInfo: any,localPath: string,titlePDF: string
+) => {
+  const transText = transcriptInfo.transText
+  const metaSummary = transcriptInfo.summary.metaSummary
+  const transSummary = transcriptInfo.summary.transSummary
+
+  const doc = new PDFDocument();
+  // 创建文件写入流并将其连接到PDF文档
+  const stream = fs.createWriteStream(localPath);
+
+  doc.pipe(stream);
+
+  // 标题
+  doc.font('Helvetica-Bold').fontSize(14).text(titlePDF, { align: 'center' }).moveDown(2);
+
+  //概述标题
+  doc.font('Helvetica-Bold').fontSize(13).text('Overview').moveDown(1);
+
+  //英文概述
+  doc.font(FontPath.EnglishFontPath).fontSize(13).text(metaSummary, {
+    lineGap: 6,
+  }).moveDown(1);
+
+  //中文概述
+  doc.font(FontPath.ChineseFontPath).fontSize(11.5).text(transSummary, {
+    lineGap: 6,
+    characterSpacing: 2
+  }).moveDown(2);
+
+  //文字稿标题
+  doc.font('Helvetica-Bold').fontSize(13).text('Transcript', { align: 'left' }).moveDown(1);
+
+  //文字稿
+  doc.font(FontPath.EnglishFontPath).fontSize(14).text(transText, {
+    lineGap: 6,
+  });
+
+  const noteColor = '#A8ABB2';
+  //概述标题
+  doc
+  .font(FontPath.ChineseFontPath)
+  .fontSize(11.5)
+  .fillColor(noteColor) // 设置文本颜色
+  .text(
+      '注：文字稿由 艾登英语 提供，可在b站，公众号，抖音等平台搜索:艾登英语，获取更多学习内容。',
+      {
+      lineGap: 6,
+      characterSpacing: 2
+      }).moveDown(1);
+
+  // 完成PDF文档的编辑
+  doc.end();
+
+  // 监听流的'finish'事件，以确定文件已经写入完成
+  stream.on('finish', function() {
+    console.log(`pdf 创建成功!`);
+  });
+
+}
     // doc.font(FontPath.ChineseFontPath).fontSize(16).text('分级英语播客一站式学习平台', { align: 'center' }).moveDown(2);
 
     //     //官网介绍

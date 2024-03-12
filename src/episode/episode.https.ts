@@ -58,6 +58,7 @@ export const transDescTool = async (
 ) => {
     try {
       const {data} = await apiTransBaidu(description).post('/translate')
+
       return data.trans_result[0].dst
     } catch (error) {
       throw new Error('调用百度翻译api失败');
